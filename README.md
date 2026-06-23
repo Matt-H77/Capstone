@@ -4,11 +4,7 @@
 
 This capstone project is a Black-Box Optimisation (BBO) challenge based on Bayesian optimisation principles. The objective is to find the maximum of eight unknown functions using only a limited set of initial observations and a restricted number of future queries.
 
-Each function represents a realistic optimisation problem, including radiation source detection, drug discovery, warehouse logistics, recipe optimisation, chemical yield improvement, and machine learning hyperparameter tuning. In all cases, the underlying function is hidden, evaluations are expensive, and only a small number of samples can be collected.
-
-The project mirrors many real-world machine learning and engineering problems where exhaustive search is impractical. Instead of knowing the exact relationship between inputs and outputs, I must build surrogate models that estimate the function behaviour and guide future sampling decisions.
-
-This project is valuable for my professional development because it strengthens skills in model-based optimisation, uncertainty quantification, experimental design, hyperparameter tuning, and decision-making under uncertainty.
+Each function represents a realistic optimisation problem where evaluations are expensive and only a small number of samples can be collected. The project mirrors many real-world machine learning and engineering problems where exhaustive search is impractical.
 
 ---
 
@@ -30,20 +26,6 @@ y.shape = (n_samples,)
 
 The dimensionality varies across functions from 2D to 8D.
 
-Example input:
-
-```python
-[0.42, 0.71, 0.18]
-```
-
-Example output:
-
-```python
-0.684
-```
-
-The input represents a candidate query point in the search space, while the output represents the observed performance score returned by the black-box function.
-
 All tasks are framed as maximisation problems.
 
 ---
@@ -61,15 +43,29 @@ Key constraints include:
 - Increasing difficulty with dimensionality
 - Expensive evaluations
 
-The challenge is to learn from previous observations and make informed decisions about where to sample next.
-
 ---
 
 ## 4. Technical Approach
 
-### Surrogate Modelling
+### Data Management
 
-I use Gaussian Process (GP) regression as the primary surrogate model because it provides both predicted function values and uncertainty estimates.
+For each optimisation task, the current set of observations is loaded and updated with newly acquired query results. Outputs are transformed where necessary so that all tasks are framed as maximisation problems.
+
+### Candidate Generation
+
+A large pool of candidate points is generated using Latin Hypercube Sampling (LHS). The number of candidates scales with problem dimensionality (2D–8D).
+
+### SVM-Guided Candidate Filtering
+
+An RBF Support Vector Machine is used to classify observed samples into high-yield and low-yield regions.
+
+- Promising candidates are retained based on predicted probability of high yield.
+- Random candidates can be reintroduced to maintain exploration.
+- Computational effort is focused on the most promising regions.
+
+### Gaussian Process Surrogate Ensemble
+
+Gaussian Process Regression is used as the primary surrogate modelling framework.
 
 Kernel families evaluated include:
 
@@ -77,43 +73,189 @@ Kernel families evaluated include:
 - Matern
 - Rational Quadratic
 
-### Candidate Generation
+Multiple GP configurations are combined into an ensemble to improve robustness.
 
-Candidate points are generated using Latin Hypercube Sampling (LHS) to achieve broad coverage of the search space.
+### Automatic Hyperparameter Optimisation
+
+GP hyperparameters are tuned automatically using Leave-One-Out Cross Validation (LOOCV).
+
+The search includes:
+
+- Kernel selection
+- Observation noise (alpha)
+- Length-scale bounds
+- Matern smoothness parameter (ν)
+- Rational Quadratic alpha
 
 ### Acquisition Functions
 
-I combine multiple acquisition functions:
+Candidate points are evaluated using:
 
-- Upper Confidence Bound (UCB)
 - Expected Improvement (EI)
+- Upper Confidence Bound (UCB)
 - Probability of Improvement (PI)
 
 ### Adaptive Exploration vs Exploitation
 
-Exploration and exploitation weights are adjusted dynamically. Early rounds prioritise exploration, while later rounds increasingly focus on promising regions identified by the model.
+Normalised acquisition scores are combined into a hybrid acquisition function that gradually shifts from exploration to exploitation as more data becomes available.
 
-### Hyperparameter Optimisation
+### Thompson Sampling Comparison
 
-Model hyperparameters are tuned automatically using:
+Posterior samples are drawn from the GP ensemble to generate an independent candidate recommendation.
 
-- Leave-One-Out Cross Validation
-- Kernel comparison
-- Noise parameter tuning
-- Length-scale optimisation
+### Neural Network Surrogate
 
-### Ensemble Modelling
+A neural-network ensemble is trained as an alternative surrogate model. Gradient ascent is performed on the learned response surface to generate candidate recommendations.
 
-Predictions from multiple Gaussian Process models are combined into an ensemble. This provides more robust mean predictions and uncertainty estimates.
+### Diagnostic Analysis
 
-### Future Considerations
+Before submission, diagnostic tools are used to assess model behaviour and candidate quality:
 
-Potential future work includes:
+- GP posterior slice visualisations
+- Training fit diagnostics
+- Acquisition score distributions
+- Mean versus uncertainty analysis
+- Thompson sampling comparisons
+- Neural-network candidate comparisons
+- SVM decision-boundary visualisations
 
-- Soft-margin SVM classification of high- and low-performing regions
-- Kernel SVMs for non-linear response surfaces
-- Alternative surrogate models for higher-dimensional problems
+---
 
-### Current Understanding
+## 5. Project Architecture
 
-My current strategy treats optimisation as a sequential learning problem. Each query is selected using surrogate modelling, uncertainty estimation, validation, and adaptive acquisition functions to maximise the value gained from a limited evaluation budget.
+```text
+┌─────────────────────────┐
+│ Initial Dataset         │
+│ X, y observations       │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Data Update Stage       │
+│ Append weekly results   │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Candidate Generation    │
+│ Latin Hypercube         │
+│ Sampling (LHS)          │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ SVM High-Yield Filter   │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ GP Hyperparameter       │
+│ Optimisation            │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ GP Ensemble             │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ EI + UCB + PI           │
+│ Acquisition Functions   │
+└───────┬─────────┬───────┘
+        │         │
+        ▼         ▼
+┌────────────┐ ┌────────────┐
+│ Thompson   │ │ Neural Net │
+│ Sampling   │ │ Surrogate  │
+└─────┬──────┘ └─────┬──────┘
+      └──────┬───────┘
+             ▼
+┌─────────────────────────┐
+│ Diagnostics             │
+└────────────┬────────────┘
+             ▼
+┌─────────────────────────┐
+│ Final Submission        │
+└─────────────────────────┘
+```
+
+---
+
+## 6. Evolution of the Optimisation Strategy
+
+### Week 1 – Initial Gaussian Process Surrogate
+
+The first iteration focused on implementing a Gaussian Process surrogate model. Candidate selection was based on GP predictions and acquisition functions.
+
+**Key achievements:**
+
+- Implemented GP regression.
+- Generated LHS candidate pools.
+- Established the Bayesian optimisation workflow.
+
+### Week 2 – Gaussian Process Ensemble
+
+The second iteration expanded the approach from a single GP model to an ensemble of Gaussian Processes.
+
+**Key improvements:**
+
+- Added RBF, Matern and Rational Quadratic kernels.
+- Implemented kernel comparison and model averaging.
+- Incorporated model disagreement into uncertainty estimates.
+
+### Week 3 – SVM-Guided Candidate Filtering
+
+An SVM classifier was introduced to identify high-yield regions before GP evaluation.
+
+**Key improvements:**
+
+- Implemented RBF SVM classification.
+- Reduced evaluation of low-quality candidates.
+- Added probability-based candidate filtering.
+- Preserved global exploration through random reinjection.
+
+### Week 4 – Neural Network Surrogate Exploration
+
+A neural-network surrogate was introduced to provide an alternative view of the response surface.
+
+**Key improvements:**
+
+- Implemented a neural-network surrogate.
+- Added neural-network ensemble averaging.
+- Compared NN predictions against GP predictions.
+
+### Week 5 – Neural Network Optimisation and Code Refactoring
+
+The fifth iteration refined the neural-network surrogate and improved project structure.
+
+**Key improvements:**
+
+- Added gradient-based optimisation on the NN response surface.
+- Compared GP, Thompson Sampling and NN candidate recommendations.
+- Refactored functionality into reusable modules:
+  - Data loading
+  - Acquisition functions
+  - GP diagnostics
+  - GP hyperparameter tuning
+  - SVM filtering
+  - Neural-network surrogates
+- Improved maintainability and readability of the codebase.
+
+---
+
+## 7. Current Strategy
+
+The final workflow combines:
+
+1. Data updating and preprocessing.
+2. Latin Hypercube candidate generation.
+3. SVM-guided candidate filtering.
+4. GP hyperparameter optimisation.
+5. GP ensemble modelling.
+6. Hybrid acquisition scoring (EI + UCB + PI).
+7. Thompson Sampling validation.
+8. Neural-network surrogate comparison.
+9. Diagnostic analysis and candidate review.
+
+This creates a robust Bayesian optimisation framework that balances exploration, exploitation, uncertainty quantification, and model diversity while operating under a limited evaluation budget.
