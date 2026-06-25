@@ -48,6 +48,85 @@ def load_initial_data(load_dataset):
 
     return function_Inputs, function_Outputs
 
+def append_input_and_output_data(
+    existing_inputs,
+    existing_outputs,
+    week_dataset,
+    position,
+    prevent_duplicates
+):
+    
+    if week_dataset >= 1:
+        new_inputs_file = "data/new_data/inputs_week1.txt"
+        new_outputs_file = "data/new_data/outputs_week1.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 2
+    if week_dataset >= 2:
+        new_inputs_file = "data/new_data/inputs_week2.txt"
+        new_outputs_file = "data/new_data/outputs_week2.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 3
+    if week_dataset >= 3:
+        new_inputs_file = "data/new_data/inputs_week3.txt"
+        new_outputs_file = "data/new_data/outputs_week3.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 4
+    if week_dataset >= 4:
+        new_inputs_file = "data/new_data/inputs_week4.txt"
+        new_outputs_file = "data/new_data/outputs_week4.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 5
+    if week_dataset >= 5:
+        new_inputs_file = "data/new_data/inputs_week5.txt"
+        new_outputs_file = "data/new_data/outputs_week5.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    return (existing_inputs, existing_outputs)
+
 # This function appends a single input/output pair from text files to existing arrays of inputs and outputs.
 # The input and output data are read from specified text files, and the function checks for duplicates if requested.
 #

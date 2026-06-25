@@ -1,8 +1,11 @@
 import numpy as np
+import math
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
+from sklearn.calibration import CalibratedClassifierCV
 
 # This module implements an SVM-based filter to classify high-yield vs low-yield candidates.
 def train_svm_high_yield_classifier(
@@ -35,44 +38,60 @@ def train_svm_high_yield_classifier(
 
     if load_dataset == 1:
         # Dataset 1 is simpler, so we can use a less complex SVM configuration.
-        svm_model = make_pipeline(
+        base_svm = make_pipeline(
             StandardScaler(),
             SVC(
                 kernel="rbf",
                 C=2.0,
                 gamma=5.0,
-                probability=True,
                 class_weight="balanced",
                 random_state=0
             )
         )
+
+        svm_model = CalibratedClassifierCV(
+            estimator=base_svm,
+            method="sigmoid",
+            cv=3
+        )
+        
     elif load_dataset == 7:
         # Dataset 7 is more complex and sparse, so we use a more aggressive SVM 
         # configuration to try to capture the high-yield region better.
-        svm_model = make_pipeline(
+        base_svm = make_pipeline(
             StandardScaler(),
             SVC(
                 kernel="rbf",
                 C=5.0,
                 gamma=2.0,
-                probability=True,
                 class_weight="balanced",
                 random_state=0
             )
         )
+
+        svm_model = CalibratedClassifierCV(
+            estimator=base_svm,
+            method="sigmoid",
+            cv=3
+        )
     else:
         # For other datasets, we use a default configuration that is more aggressive 
         # than dataset 1 but less than dataset 7, as a starting point.
-        svm_model = make_pipeline(
+        base_svm = make_pipeline(
             StandardScaler(),
             SVC(
                 kernel="rbf",
                 C=5.0,
                 gamma="scale",
-                probability=True,
                 class_weight="balanced",
                 random_state=0
             )
+        )
+
+        svm_model = CalibratedClassifierCV(
+            estimator=base_svm,
+            method="sigmoid",
+            cv=3
         )
 
     svm_model.fit(X_train, labels)
@@ -252,6 +271,380 @@ def plot_svm_decision_boundaries(
         ax.grid(True)
         plt.show()
 
+def plot_svm_decision_boundaries_grid(
+    svm_model,
+    X_train,
+    y_train,
+    labels,
+    threshold,
+    slice_center=None,
+    grid_size=150,
+    max_pairs=6
+):
+    X_train = np.asarray(X_train)
+    y_train = np.asarray(y_train).ravel()
+    labels = np.asarray(labels)
+
+    n_dims = X_train.shape[1]
+
+    if slice_center is None:
+        slice_center = X_train[np.argmax(y_train)]
+
+    pairs = [(i, j) for i in range(n_dims) for j in range(i + 1, n_dims)]
+    pairs = pairs[:max_pairs]
+
+    n_plots = len(pairs)
+
+    if n_plots == 0:
+        print("No dimension pairs available to plot.")
+        return
+
+    n_cols = min(3, n_plots)
+    n_rows = int(np.ceil(n_plots / n_cols))
+
+    fig, axes = plt.subplots(
+        n_rows,
+        n_cols,
+        figsize=(6 * n_cols, 5 * n_rows),
+        squeeze=False
+    )
+
+    axes = axes.flatten()
+    contour = None
+
+    for plot_idx, (dim_i, dim_j) in enumerate(pairs):
+        ax = axes[plot_idx]
+
+        xi = np.linspace(0.0, 1.0, grid_size)
+        xj = np.linspace(0.0, 1.0, grid_size)
+        xx, yy_grid = np.meshgrid(xi, xj)
+
+        X_plot = np.tile(slice_center, (grid_size * grid_size, 1))
+        X_plot[:, dim_i] = xx.ravel()
+        X_plot[:, dim_j] = yy_grid.ravel()
+
+        p_high = svm_model.predict_proba(X_plot)[:, 1]
+        p_high = p_high.reshape(grid_size, grid_size)
+
+        contour = ax.contourf(
+            xx,
+            yy_grid,
+            p_high,
+            levels=20,
+            alpha=0.75
+        )
+
+        ax.contour(
+            xx,
+            yy_grid,
+            p_high,
+            levels=[0.5],
+            colors="black",
+            linewidths=2
+        )
+
+        low_mask = labels == 0
+        high_mask = labels == 1
+
+        ax.scatter(
+            X_train[low_mask, dim_i],
+            X_train[low_mask, dim_j],
+            marker="x",
+            s=50
+        )
+
+        ax.scatter(
+            X_train[high_mask, dim_i],
+            X_train[high_mask, dim_j],
+            marker="*",
+            s=100
+        )
+
+        ax.scatter(
+            slice_center[dim_i],
+            slice_center[dim_j],
+            marker="o",
+            s=100,
+            facecolors="none",
+            edgecolors="black",
+            linewidths=2
+        )
+
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_xlabel(f"Dim {dim_i}")
+        ax.set_ylabel(f"Dim {dim_j}")
+        ax.set_title(f"Dimensions {dim_i} vs {dim_j}")
+        ax.grid(True, alpha=0.3)
+
+    for i in range(n_plots, len(axes)):
+        axes[i].axis("off")
+
+    fig.subplots_adjust(
+        left=0.06,
+        right=0.88,
+        bottom=0.06,
+        top=0.86,
+        hspace=0.35,
+        wspace=0.22
+    )
+
+    cbar_ax = fig.add_axes([0.91, 0.18, 0.02, 0.62])
+    cbar = fig.colorbar(contour, cax=cbar_ax)
+    cbar.set_label("SVM probability of high yield")
+
+    legend_handles = [
+        Line2D([0], [0], marker="x", linestyle="None", markersize=8, label="Low yield"),
+        Line2D([0], [0], marker="*", linestyle="None", markersize=10, label="High yield"),
+        Line2D(
+            [0], [0],
+            marker="o",
+            linestyle="None",
+            markersize=8,
+            markerfacecolor="none",
+            markeredgecolor="black",
+            markeredgewidth=2,
+            label="Slice centre"
+        )
+    ]
+
+    fig.suptitle(
+        "SVM Decision Boundary Slices\n"
+        f"High yield = top {100.0 * labels.mean():.1f}% observed "
+        f"(threshold={threshold:.6g})",
+        fontsize=14,
+        y=0.985
+    )
+
+    fig.legend(
+        handles=legend_handles,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.925),
+        ncol=3,
+        frameon=True
+    )
+
+    plt.show()
+
+def plot_svm_decision_boundary_matrix(
+    svm_model,
+    X_train,
+    y_train,
+    labels,
+    threshold,
+    slice_center=None,
+    grid_size=100,
+    show_margins=True
+):
+    X_train = np.asarray(X_train)
+    y_train = np.asarray(y_train).ravel()
+    labels = np.asarray(labels)
+
+    n_dims = X_train.shape[1]
+
+    if slice_center is None:
+        slice_center = X_train[np.argmax(y_train)]
+
+    fig, axes = plt.subplots(
+        n_dims,
+        n_dims,
+        figsize=(3.0 * n_dims, 3.0 * n_dims)
+    )
+
+    if n_dims == 1:
+        axes = np.array([[axes]])
+    elif n_dims == 2:
+        axes = np.asarray(axes)
+
+    contour = None
+
+    for row in range(n_dims):
+        for col in range(n_dims):
+            ax = axes[row, col]
+
+            if row == col:
+                ax.text(
+                    0.5, 0.5,
+                    f"Dim {row}",
+                    ha="center",
+                    va="center",
+                    fontsize=11
+                )
+                ax.set_xticks([])
+                ax.set_yticks([])
+                ax.set_xlim(0, 1)
+                ax.set_ylim(0, 1)
+                continue
+
+            if col > row:
+                ax.axis("off")
+                continue
+
+            dim_i = col
+            dim_j = row
+
+            xi = np.linspace(0.0, 1.0, grid_size)
+            xj = np.linspace(0.0, 1.0, grid_size)
+            xx, yy_grid = np.meshgrid(xi, xj)
+
+            X_plot = np.tile(slice_center, (grid_size * grid_size, 1))
+            X_plot[:, dim_i] = xx.ravel()
+            X_plot[:, dim_j] = yy_grid.ravel()
+
+            p_high = svm_model.predict_proba(X_plot)[:, 1]
+            p_high = p_high.reshape(grid_size, grid_size)
+
+            contour = ax.contourf(
+                xx,
+                yy_grid,
+                p_high,
+                levels=20,
+                alpha=0.75
+            )
+
+            # Decision boundary using probability
+            ax.contour(
+                xx,
+                yy_grid,
+                p_high,
+                levels=[0.5],
+                colors="black",
+                linewidths=1.5
+            )
+
+            # SVM margin lines using decision_function: -1 and +1
+            if show_margins and hasattr(svm_model, "decision_function"):
+                decision_values = svm_model.decision_function(X_plot)
+                decision_values = decision_values.reshape(grid_size, grid_size)
+
+                ax.contour(
+                    xx,
+                    yy_grid,
+                    decision_values,
+                    levels=[-1, 1],
+                    colors="black",
+                    linestyles="--",
+                    linewidths=1.2
+                )
+
+            low_mask = labels == 0
+            high_mask = labels == 1
+
+            ax.scatter(
+                X_train[low_mask, dim_i],
+                X_train[low_mask, dim_j],
+                marker="x",
+                s=25,
+                label="Low yield"
+            )
+
+            ax.scatter(
+                X_train[high_mask, dim_i],
+                X_train[high_mask, dim_j],
+                marker="*",
+                s=60,
+                label="High yield"
+            )
+
+            ax.scatter(
+                slice_center[dim_i],
+                slice_center[dim_j],
+                marker="o",
+                s=60,
+                facecolors="none",
+                edgecolors="black",
+                linewidths=1.5,
+                label="Slice centre"
+            )
+
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+            ax.grid(True, alpha=0.25)
+
+            if row == n_dims - 1:
+                ax.set_xlabel(f"Dim {dim_i}")
+            else:
+                ax.set_xticklabels([])
+
+            if col == 0:
+                ax.set_ylabel(f"Dim {dim_j}")
+            else:
+                ax.set_yticklabels([])
+
+    if n_dims <= 2:
+        top_space = 0.72
+        legend_y = 0.86
+        title_y = 0.97
+        cbar_bottom = 0.18
+        cbar_height = 0.55
+    else:
+        top_space = 0.88
+        legend_y = 0.94
+        title_y = 0.99
+        cbar_bottom = 0.15
+        cbar_height = 0.65
+
+    fig.subplots_adjust(
+        left=0.08,
+        right=0.84,
+        bottom=0.08,
+        top=top_space,
+        hspace=0.18,
+        wspace=0.18
+    )
+
+    if contour is not None:
+        cbar_ax = fig.add_axes([0.88, cbar_bottom, 0.03, cbar_height])
+        cbar = fig.colorbar(contour, cax=cbar_ax)
+        cbar.set_label("SVM probability of high yield")
+
+    legend_handles = [
+        Line2D([0], [0], marker="x", linestyle="None", markersize=7, label="Low yield"),
+        Line2D([0], [0], marker="*", linestyle="None", markersize=9, label="High yield"),
+        Line2D(
+            [0], [0],
+            marker="o",
+            linestyle="None",
+            markersize=7,
+            markerfacecolor="none",
+            markeredgecolor="black",
+            markeredgewidth=1.5,
+            label="Slice centre"
+        ),
+        Line2D(
+            [0], [0],
+            color="black",
+            linestyle="-",
+            linewidth=1.5,
+            label="Decision boundary"
+        ),
+        Line2D(
+            [0], [0],
+            color="black",
+            linestyle="--",
+            linewidth=1.2,
+            label="SVM margins"
+        )
+    ]
+
+    fig.suptitle(
+        "SVM Pairwise Decision Boundary Matrix\n"
+        f"High yield = top {100.0 * labels.mean():.1f}% observed "
+        f"(threshold={threshold:.6g})",
+        fontsize=14,
+        y=title_y
+    )
+
+    fig.legend(
+        handles=legend_handles,
+        loc="upper center",
+        bbox_to_anchor=(0.5, legend_y),
+        ncol=5,
+        frameon=True
+    )
+
+    plt.show()
+    
 # This function extends the previous one by also plotting the decision boundary (where the SVM decision function is zero) 
 # and the margin lines (where the decision function is ±1). This provides a more detailed visualization of how the SVM 
 # is classifying the input space, showing not only the probability of being high-yield but also the regions where the 

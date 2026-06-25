@@ -1,33 +1,35 @@
-"""
-Neural-network surrogate candidate generator for black-box optimisation.
 
-This module is intended to be used as an extra candidate source beside the
-Gaussian Process ensemble. It trains a small PyTorch MLP on the observed
-samples, then uses backpropagation with respect to the input x to perform
-bounded gradient ascent inside the unit hypercube.
+# Neural-network surrogate candidate generator for black-box optimisation.
 
-Typical notebook usage:
+# This module is intended to be used as an extra candidate source beside the
+# Gaussian Process ensemble. It trains a small PyTorch MLP on the observed
+# samples, then uses backpropagation with respect to the input x to perform
+# bounded gradient ascent inside the unit hypercube.
+#
+# Typical notebook usage:
+#
+#    from src.neural_surrogate import NeuralSurrogateCandidateGenerator
+#
+#    nn_generator = NeuralSurrogateCandidateGenerator(
+#        n_ensemble=5,
+#        hidden_units=32,
+#        learning_rate=1e-3,
+#        max_epochs=1500,
+#        random_state=0,
+#        device="cpu",
+#        verbose=True,
+#    )
+#
+#    nn_report = nn_generator.suggest(
+#        X=X,
+#        y=y,
+#        candidates=candidates,
+#        best_gp_input=best_input,
+#        top_k_starts=32,
+#    )
 
-    from src.neural_surrogate import NeuralSurrogateCandidateGenerator
+#    print(nn_report["candidate"])
 
-    nn_generator = NeuralSurrogateCandidateGenerator(
-        n_ensemble=5,
-        hidden_units=32,
-        learning_rate=1e-3,
-        max_epochs=1500,
-        random_state=0,
-    )
-
-    nn_report = nn_generator.suggest(
-        X=X,
-        y=y,
-        candidates=candidates,
-        best_gp_input=best_input,
-        top_k_starts=32,
-    )
-
-    print(nn_report["candidate"])
-"""
 
 from __future__ import annotations
 
@@ -46,7 +48,7 @@ except ImportError as exc:  # pragma: no cover - useful message for notebooks
 
 
 class _SmallMLP(nn.Module):
-    """Small regression MLP used inside the surrogate ensemble."""
+    # Small regression MLP used inside the surrogate ensemble.
 
     def __init__(self, n_dimensions: int, hidden_units: int = 32, activation: str = "tanh"):
         super().__init__()
@@ -65,6 +67,21 @@ class _SmallMLP(nn.Module):
             act(),
             nn.Linear(hidden_units, 1),
         )
+        #self.net = nn.Sequential(
+        #    nn.Linear(n_dimensions, hidden_units),
+        #    act(),
+
+        #    nn.Linear(hidden_units, hidden_units),
+        #    act(),
+
+        #    nn.Linear(hidden_units, hidden_units),
+        #    act(),
+
+        #    nn.Linear(hidden_units, hidden_units),
+        #    act(),
+
+        #    nn.Linear(hidden_units, 1),
+        #)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.net(x).squeeze(-1)

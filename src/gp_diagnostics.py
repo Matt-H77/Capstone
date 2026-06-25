@@ -292,6 +292,195 @@ def plot_gp_posterior_slices_grid(
 
     plt.show()
 
+def plot_gp_posterior_slices_grid_fixed(
+    X: np.ndarray,
+    y: np.ndarray,
+    trained_models: Mapping[str, object],
+    best_input: np.ndarray,
+    NN_best_input: np.ndarray,
+    Thompson_best_input: np.ndarray,
+    ensemble_mean: np.ndarray,
+    best_idx: int,
+    week_dataset: int,
+    slice_center: Optional[np.ndarray] = None,
+    n_dimensions: Optional[int] = None,
+    beta: float = 2.0,
+    grid_size: int = 500,
+) -> None:
+    """Plot 1D GP posterior slices using a fixed slice centre."""
+
+    from matplotlib.lines import Line2D
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    X = np.asarray(X)
+    y = np.asarray(y)
+    best_input = np.asarray(best_input)
+    NN_best_input = np.asarray(NN_best_input)
+    Thompson_best_input = np.asarray(Thompson_best_input)
+
+    if n_dimensions is None:
+        n_dimensions = X.shape[1]
+
+    if slice_center is None:
+        slice_center = best_input.copy()
+    else:
+        slice_center = np.asarray(slice_center).copy()
+
+    if slice_center.shape[0] != X.shape[1]:
+        raise ValueError(
+            f"slice_center has length {slice_center.shape[0]}, "
+            f"but X has {X.shape[1]} dimensions."
+        )
+
+    x_grid = np.linspace(0.0, 1.0, grid_size)
+    recent_count = min(int(week_dataset), len(X))
+
+    ncols = int(np.ceil(np.sqrt(n_dimensions)))
+    nrows = int(np.ceil(n_dimensions / ncols))
+
+    fig, axes = plt.subplots(
+        nrows,
+        ncols,
+        figsize=(6 * ncols, 4 * nrows),
+        squeeze=False,
+    )
+
+    axes = axes.flatten()
+    kernel_legend_handles = {}
+
+    candidate_y = ensemble_mean[best_idx]
+
+    for dim in range(n_dimensions):
+        ax = axes[dim]
+
+        # Fixed slice position
+        X_slice = np.tile(slice_center, (grid_size, 1))
+        X_slice[:, dim] = x_grid
+
+        # Observed samples
+        ax.scatter(
+            X[:, dim],
+            y,
+            c="r",
+            marker="x",
+            s=30,
+            alpha=0.35,
+        )
+
+        # Recent samples
+        for i in range(1, recent_count + 1):
+            ax.scatter(
+                X[-i, dim],
+                y[-i],
+                c="b",
+                marker="*",
+                s=60,
+                alpha=0.7,
+            )
+
+        # Observed min/max
+        ax.axhline(y.max(), linestyle="--", color="gray", alpha=0.7)
+        ax.axhline(y.min(), linestyle="--", color="gray", alpha=0.7)
+
+        # GP posterior slices
+        for kernel_name, gp in trained_models.items():
+            mean, std = gp.predict(X_slice, return_std=True)
+
+            line, = ax.plot(
+                x_grid,
+                mean,
+                label=f"{kernel_name} posterior mean",
+            )
+
+            if kernel_name not in kernel_legend_handles:
+                kernel_legend_handles[kernel_name] = line
+
+            ax.fill_between(
+                x_grid,
+                mean - beta * std,
+                mean + beta * std,
+                alpha=0.15,
+            )
+
+        # Fixed slice centre marker
+        ax.axvline(
+            slice_center[dim],
+            linestyle="--",
+            color="k",
+            alpha=0.6,
+        )
+
+        # Candidate markers
+        ax.scatter(
+            best_input[dim],
+            candidate_y,
+            marker="o",
+            s=80,
+            linewidths=2,
+            color="red",
+        )
+
+        ax.scatter(
+            Thompson_best_input[dim],
+            candidate_y,
+            marker="D",
+            s=80,
+            linewidths=2,
+            facecolors="none",
+            edgecolors="blue",
+        )
+
+        ax.scatter(
+            NN_best_input[dim],
+            candidate_y,
+            marker="s",
+            s=80,
+            linewidths=2,
+            facecolors="none",
+            edgecolors="red",
+        )
+
+        ax.set_title(f"Dimension {dim + 1}")
+        ax.set_xlabel(f"Input dimension {dim + 1}")
+        ax.set_ylabel("Predicted output")
+        ax.grid(True)
+
+    for idx in range(n_dimensions, len(axes)):
+        axes[idx].axis("off")
+
+    legend_handles = list(kernel_legend_handles.values()) + [
+        Line2D([], [], color="gray", linestyle="--", label="Min / max observed"),
+        Line2D([], [], color="k", linestyle="--", label="Fixed slice centre"),
+        Line2D([], [], marker="x", linestyle="None", color="red", label="Observed samples"),
+        Line2D([], [], marker="*", linestyle="None", color="blue", markersize=10, label="Recent samples"),
+        Line2D([], [], marker="o", linestyle="None", color="red", markersize=8, label="Final selected point"),
+        Line2D([], [], marker="D", linestyle="None", color="blue", markersize=8, label="Thompson candidate"),
+        Line2D([], [], marker="s", linestyle="None", markerfacecolor="none", markeredgecolor="red", markeredgewidth=2, markersize=8, label="NN candidate"),
+    ]
+
+    fig.legend(
+        handles=legend_handles,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.01),
+        ncol=3,
+        frameon=True,
+    )
+
+    fig.suptitle(
+        f"GP Posterior Slices at Fixed Slice Centre: {np.round(slice_center, 3)}",
+        fontsize=14,
+        y=0.98,
+    )
+
+    fig.subplots_adjust(
+        bottom=0.24,
+        top=0.90,
+        hspace=0.35,
+        wspace=0.25,
+    )
+
+    plt.show()
 
 def plot_training_fit(X: np.ndarray, y: np.ndarray, trained_models: Mapping[str, object]) -> None:
     """Plot actual vs predicted training outputs for each GP model."""
@@ -570,6 +759,21 @@ def run_gp_diagnostics(
         beta=beta,
         grid_size=slice_grid_size,
     )
+
+    fixed_slice_center = np.full(X.shape[1], 0.5)
+
+    plot_gp_posterior_slices_grid_fixed(
+    X=X,
+    y=y,
+    trained_models=trained_models,
+    best_input=best_input,
+    NN_best_input=NN_best_input,
+    Thompson_best_input=Thompson_best_input,
+    ensemble_mean=ensemble_mean,
+    best_idx=best_idx,
+    week_dataset=week_dataset,
+    slice_center=fixed_slice_center,
+)
 
     plot_training_fit(X=X, y=y, trained_models=trained_models)
     print_training_std_report(X=X, trained_models=trained_models)
