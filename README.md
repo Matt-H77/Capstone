@@ -242,6 +242,15 @@ The fifth iteration refined the neural-network surrogate and improved project st
   - Neural-network surrogates
 - Improved maintainability and readability of the codebase.
 
+### Week 6 - Improved reporting and plots
+
+Worked on improving reporting and explination of next choice.
+
+**Key improvements:**
+
+- Added more detailed report on models and reasoning for next choice of candidate.
+- GP diagnostics, tweaked plots for better visual inspection.
+
 ---
 
 ## 7. Current Strategy
