@@ -1,3 +1,7 @@
+# Function to print a detailed report of the automatic optimisation process, 
+# including dataset summary, search strategy, GP training quality, acquisition 
+# suggestions, final hybrid decision, cross-model agreement, convergence diagnostics, 
+# decision type, interpretation, and optimiser confidence.  
 def print_automatic_optimisation_report(
     X,
     y,
@@ -11,18 +15,29 @@ def print_automatic_optimisation_report(
     ei_final,
     ucb_final,
     pi_final,
+    load_dataset,
+    week_dataset,
+    progress,
     **kwargs,
 ):
     import numpy as np
 
+    # Helper functions for formatting and classification
+    # Optional values such as exploration_weight, candidates, nn_candidate, etc.
+    # are passed through **kwargs, not globals().
     def has(name):
-        return name in globals()
+        return name in kwargs and kwargs[name] is not None
 
+    def get(name, default=None):
+        return kwargs.get(name, default)
+
+    # Helper function to format arrays for printing
     def arr(x):
         if x is None:
             return "None"
         return np.array2string(np.asarray(x), precision=6, suppress_small=True)
 
+    # Helper function to classify search behaviour based on distance to best observed input
     def classify_search_behaviour(distance):
         if distance < 0.02:
             return "Strong local refinement"
@@ -33,6 +48,7 @@ def print_automatic_optimisation_report(
         else:
             return "Global exploration"
 
+    # Helper function to label agreement based on distance
     def agreement_label(distance):
         if distance < 0.05:
             return "Very high"
@@ -42,7 +58,7 @@ def print_automatic_optimisation_report(
             return "Moderate"
         else:
             return "Low"
-
+    # Helper function to label uncertainty based on standard deviation
     def uncertainty_label(std_value):
         if std_value < 0.001:
             return "Very low"
@@ -53,6 +69,7 @@ def print_automatic_optimisation_report(
         else:
             return "High"
 
+    # Helper function to label confidence based on score
     def confidence_label(score):
         if score >= 4.0:
             return "VERY HIGH"
@@ -65,6 +82,7 @@ def print_automatic_optimisation_report(
         else:
             return "LOW"
 
+    # Helper function to extract top candidate inputs from results dictionary
     def extract_top_candidate_inputs(results_dict):
         inputs = []
         for _, result in results_dict.items():
@@ -74,6 +92,7 @@ def print_automatic_optimisation_report(
             return None
         return np.vstack(inputs)
 
+    # Helper function to compute mean pairwise distance between points
     def mean_pairwise_distance(points):
         if points is None or len(points) < 2:
             return None
@@ -85,11 +104,14 @@ def print_automatic_optimisation_report(
 
         return float(np.mean(distances)) if distances else None
 
-    print("\n================ AUTOMATIC OPTIMISATION REPORT ================\n")
-
+    print("==================================================")
+    print("OPTIMISATION REPORT")
+    print("==================================================")
+    print("==================================================")
     print("1. DATASET SUMMARY")
-    print(f"Function / dataset: {load_dataset if has('load_dataset') else 'unknown'}")
-    print(f"Week dataset: {week_dataset if has('week_dataset') else 'unknown'}")
+    print("==================================================")
+    print(f"Function / dataset: {load_dataset}")
+    print(f"Week dataset: {week_dataset}")
     print(f"Samples used: {X.shape[0]}")
     print(f"Input dimensions: {X.shape[1]}")
     print(f"Samples per dimension: {X.shape[0] / X.shape[1]:.4f}")
@@ -97,6 +119,7 @@ def print_automatic_optimisation_report(
     print(f"Observed y max: {np.max(y):.6f}")
     print(f"Observed y mean: {np.mean(y):.6f}")
 
+    # Identify the best observed input and output from the dataset
     best_observed_idx = int(np.argmax(y))
     best_observed_input = X[best_observed_idx]
     best_observed_output = y[best_observed_idx]
@@ -104,23 +127,27 @@ def print_automatic_optimisation_report(
     print(f"Best observed input: {arr(best_observed_input)}")
     print(f"Best observed output: {best_observed_output:.6f}")
 
+    print("==================================================")
     print("\n2. SEARCH STRATEGY")
-    if has("progress"):
-        print(f"Progress through budget: {progress:.4f}")
+    print("==================================================")
+    if progress is not None:
+        print(f"Progress through budget: {get('progress', progress):.4f}")
     if has("exploration_weight"):
-        print(f"Exploration weight / UCB: {exploration_weight:.4f}")
+        print(f"Exploration weight / UCB: {get('exploration_weight'):.4f}")
     if has("exploitation_weight"):
-        print(f"Exploitation weight / EI: {exploitation_weight:.4f}")
+        print(f"Exploitation weight / EI: {get('exploitation_weight'):.4f}")
     if has("xi"):
-        print(f"EI / PI xi: {xi:.6g}")
+        print(f"EI / PI xi: {get('xi'):.6g}")
     if has("num_candidates"):
-        print(f"Generated candidates before filtering: {num_candidates}")
+        print(f"Generated candidates before filtering: {get('num_candidates_before_svm')}")
     if has("candidates"):
-        print(f"Candidates used after filtering: {len(candidates)}")
+        print(f"Candidates used after filtering: {len(get('candidates'))}")
     if has("svm_enabled"):
-        print(f"SVM filtering enabled: {svm_enabled}")
+        print(f"SVM filtering enabled: {get('svm_enabled')}")
 
+    print("==================================================")
     print("\n3. GP TRAINING QUALITY")
+    print("==================================================")
     training_errors = []
 
     y_scale = float(np.max(y) - np.min(y))
@@ -143,7 +170,9 @@ def print_automatic_optimisation_report(
 
     median_training_rmse = float(np.median(training_errors)) if training_errors else None
 
+    print("==================================================")
     print("\n4. INDIVIDUAL GP ACQUISITION SUGGESTIONS")
+    print("==================================================")
     for method, result in results.items():
         print(f"\n{method}")
         print(f"  Input: {arr(result['input'])}")
@@ -154,7 +183,9 @@ def print_automatic_optimisation_report(
     acquisition_points = extract_top_candidate_inputs(results)
     acquisition_spread = mean_pairwise_distance(acquisition_points)
 
+    print("==================================================")
     print("\n5. FINAL HYBRID DECISION")
+    print("==================================================")
     print(f"Best next input: {arr(best_input)}")
     print(f"Ensemble predicted mean: {ensemble_mean[best_idx]:.6f}")
     print(f"Ensemble predicted std: {ensemble_std[best_idx]:.6f}")
@@ -167,7 +198,9 @@ def print_automatic_optimisation_report(
         "within the candidate set, not an absolute probability of success."
     )
 
+    print("==================================================")
     print("\n6. CROSS-MODEL AGREEMENT")
+    print("==================================================")
     print(f"GP / hybrid candidate: {arr(best_input)}")
 
     distance_to_best_observed = np.linalg.norm(best_input - best_observed_input)
@@ -185,23 +218,27 @@ def print_automatic_optimisation_report(
     d_nn = None
 
     if has("best_input_thompson"):
+        best_input_thompson = np.asarray(get("best_input_thompson"), dtype=float)
         d_thompson = np.linalg.norm(best_input - best_input_thompson)
         print(f"Thompson candidate: {arr(best_input_thompson)}")
         print(f"Distance GP to Thompson: {d_thompson:.6f}")
         print(f"GP / Thompson agreement: {agreement_label(d_thompson)}")
 
-    if has("nn_candidate") and nn_candidate is not None:
+    if has("nn_candidate"):
+        nn_candidate = np.asarray(get("nn_candidate"), dtype=float)
         d_nn = np.linalg.norm(best_input - nn_candidate)
         print(f"NN candidate: {arr(nn_candidate)}")
         print(f"Distance GP to NN: {d_nn:.6f}")
         print(f"GP / NN agreement: {agreement_label(d_nn)}")
 
         if has("nn_gp_ensemble_mean"):
-            print(f"GP mean at NN candidate: {nn_gp_ensemble_mean:.6f}")
+            print(f"GP mean at NN candidate: {get('nn_gp_ensemble_mean'):.6f}")
         if has("nn_gp_ensemble_std"):
-            print(f"GP std at NN candidate: {nn_gp_ensemble_std:.6f}")
+            print(f"GP std at NN candidate: {get('nn_gp_ensemble_std'):.6f}")
 
+    print("==================================================")
     print("\n7. CONVERGENCE DIAGNOSTICS")
+    print("==================================================")
 
     selected_std = ensemble_std[best_idx]
     selected_ei = ei_final[best_idx]
@@ -240,7 +277,9 @@ def print_automatic_optimisation_report(
             "indicating strong local refinement."
         )
 
+    print("==================================================")
     print("\n8. DECISION TYPE")
+    print("==================================================")
 
     decision_type = classify_search_behaviour(distance_to_best_observed)
     print(f"Strategy: {decision_type}")
@@ -283,7 +322,9 @@ def print_automatic_optimisation_report(
             "so the query will add information in a relatively unexplored part of the domain."
         )
 
+    print("==================================================")
     print("\n9. INTERPRETATION")
+    print("==================================================")
 
     if selected_std < 0.5:
         print("The selected candidate has low-to-moderate uncertainty.")
@@ -306,7 +347,9 @@ def print_automatic_optimisation_report(
         else:
             print("The GP ensemble and NN surrogate disagree, so the neural surrogate is not supporting this query.")
 
+    print("==================================================")
     print("\n10. OPTIMISER CONFIDENCE")
+    print("==================================================")
 
     confidence_score = 0.0
     confidence_reasons = []
@@ -358,6 +401,8 @@ def print_automatic_optimisation_report(
     else:
         print("  - no strong agreement signals were detected")
 
+    print("==================================================")
     print("\n11. FINAL RECOMMENDATION")
+    print("==================================================")
     print(f"Submit next query: {arr(best_input)}")
     print("\n===============================================================\n")

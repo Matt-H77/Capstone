@@ -29,9 +29,7 @@ from itertools import combinations
 from typing import Mapping, Optional
 
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize
 import numpy as np
-import math
 
 
 def _nearest_candidate_index(candidates: np.ndarray, point: np.ndarray) -> int:
@@ -292,8 +290,6 @@ def plot_gp_posterior_slices_grid(
             gp_candidate_y,
             marker="o",
             s=80,
-            facecolors="none",
-            edgecolors="red",
             linewidths=2,
         )
 
@@ -304,7 +300,7 @@ def plot_gp_posterior_slices_grid(
             s=80,
             linewidths=2,
             facecolors="none",
-            edgecolors="green",
+            edgecolors="red",
         )
 
         ax.scatter(
@@ -330,9 +326,9 @@ def plot_gp_posterior_slices_grid(
         Line2D([], [], color="k", linestyle="--", label="Slice centre"),
         Line2D([], [], marker="x", linestyle="None", color="red", label="Observed samples"),
         Line2D([], [], marker="*", linestyle="None", color="blue", markersize=10, label="Recent samples"),
-        Line2D([], [], marker="o", linestyle="None", markerfacecolor="none", markeredgecolor="red", markersize=8, label="GP / acquisition candidate"),
-        Line2D([], [], marker="D", linestyle="None", markerfacecolor="none", markeredgecolor="blue", markersize=8, label="Thompson candidate"),
-        Line2D([], [], marker="s", linestyle="None", markerfacecolor="none", markeredgecolor="green", markeredgewidth=2, markersize=8, label="NN candidate", ),
+        Line2D([], [], marker="o", linestyle="None", color="red",markersize=8, label="GP / acquisition candidate"),
+        Line2D([], [], marker="D", linestyle="None", color="blue",markersize=8, label="Thompson candidate"),
+        Line2D([], [], marker="s", linestyle="None", markerfacecolor="none", markeredgecolor="red", markeredgewidth=2, markersize=8, label="NN candidate", ),
     ]
 
     fig.legend(
@@ -341,12 +337,6 @@ def plot_gp_posterior_slices_grid(
         bbox_to_anchor=(0.5, 0.01),
         ncol=3,
         frameon=True,
-    )
-
-    fig.suptitle(
-        f"GP Posterior Slices Fixed Slice at GP Centre: {np.round(best_input, 3)}",
-        fontsize=14,
-        y=0.98,
     )
 
     fig.subplots_adjust(
@@ -712,9 +702,6 @@ def plot_candidate_mean_vs_uncertainty(
             ensemble_std[best_idx],
             s=140,
             marker="o",
-            facecolors="none",
-            edgecolors="red",
-            linewidths=2,
             label="GP / acquisition candidate",
             zorder=10,
         )
@@ -724,7 +711,6 @@ def plot_candidate_mean_vs_uncertainty(
             s=140,
             marker="D",
             facecolors="none",
-            edgecolors="blue",
             linewidths=2,
             label="Thompson candidate",
             zorder=11,
@@ -736,7 +722,6 @@ def plot_candidate_mean_vs_uncertainty(
                 s=140,
                 marker="s",
                 facecolors="none",
-                edgecolors="green",
                 linewidths=2,
                 label="NN candidate",
                 zorder=12,
@@ -764,7 +749,7 @@ def plot_candidate_mean_vs_uncertainty(
     plt.show()
 
 
-def plot_2d_posterior_slices_old(
+def plot_2d_posterior_slices(
     X: np.ndarray,
     trained_models: Mapping[str, object],
     best_input: np.ndarray,
@@ -811,9 +796,6 @@ def plot_2d_posterior_slices_old(
             best_input[dim_b],
             s=120,
             marker="o",
-            facecolors="none",
-            edgecolors="red",
-            linewidths=2,
             label="GP / acquisition candidate",
         )
         plt.scatter(
@@ -822,7 +804,6 @@ def plot_2d_posterior_slices_old(
             s=120,
             marker="D",
             facecolors="none",
-            edgecolors="blue",
             linewidths=2,
             label="Thompson candidate",
         )
@@ -832,7 +813,6 @@ def plot_2d_posterior_slices_old(
             s=120,
             marker="s",
             facecolors="none",
-            edgecolors="green",
             linewidths=2,
             label="NN candidate",
         )
@@ -847,579 +827,6 @@ def plot_2d_posterior_slices_old(
         plt.grid(True)
         plt.show()
 
-def plot_2d_posterior_slices(
-    X: np.ndarray,
-    trained_models,
-    best_input: np.ndarray,
-    NN_best_input: np.ndarray,
-    Thompson_best_input: np.ndarray,
-    n_dimensions=None,
-    model_name="Matern",
-    grid_size=100,
-):
-    """
-    Plot every pairwise 2D posterior slice in a single figure.
-    """
-
-    X = np.asarray(X)
-    best_input = np.asarray(best_input)
-    NN_best_input = np.asarray(NN_best_input)
-    Thompson_best_input = np.asarray(Thompson_best_input)
-
-    if n_dimensions is None:
-        n_dimensions = X.shape[1]
-
-    if model_name not in trained_models:
-        raise KeyError(
-            f"'{model_name}' not found. Available: {list(trained_models.keys())}"
-        )
-
-    gp = trained_models[model_name]
-
-    pairs = list(combinations(range(n_dimensions), 2))
-    n_plots = len(pairs)
-
-    # Choose a nearly-square grid
-    ncols = math.ceil(math.sqrt(n_plots))
-    nrows = math.ceil(n_plots / ncols)
-
-    fig, axes = plt.subplots(
-        nrows,
-        ncols,
-        figsize=(5 * ncols, 4.5 * nrows),
-        squeeze=False,
-    )
-
-    contour = None
-
-    for ax, (dim_a, dim_b) in zip(axes.flat, pairs):
-
-        x1 = np.linspace(0, 1, grid_size)
-        x2 = np.linspace(0, 1, grid_size)
-        xx, yy = np.meshgrid(x1, x2)
-
-        X_grid = np.tile(best_input, (grid_size * grid_size, 1))
-        X_grid[:, dim_a] = xx.ravel()
-        X_grid[:, dim_b] = yy.ravel()
-
-        mean_grid, _ = gp.predict(X_grid, return_std=True)
-        mean_grid = mean_grid.reshape(grid_size, grid_size)
-
-        contour = ax.contourf(
-            xx,
-            yy,
-            mean_grid,
-            levels=30,
-            cmap="viridis",
-        )
-
-        ax.scatter(
-            X[:, dim_a],
-            X[:, dim_b],
-            marker="x",
-            c="black",
-            s=25,
-            label="Observed samples",
-        )
-
-        ax.scatter(
-            best_input[dim_a],
-            best_input[dim_b],
-            marker="o",
-            s=120,
-            facecolors="none",
-            edgecolors="red",
-            linewidths=2,
-            label="GP / acquisition candidate",
-        )
-
-        ax.scatter(
-            Thompson_best_input[dim_a],
-            Thompson_best_input[dim_b],
-            marker="D",
-            s=120,
-            facecolors="none",
-            edgecolors="blue",
-            linewidths=2,
-            label="Thompson candidate",
-        )
-
-        ax.scatter(
-            NN_best_input[dim_a],
-            NN_best_input[dim_b],
-            marker="s",
-            s=120,
-            facecolors="none",
-            edgecolors="green",
-            linewidths=2,
-            label="NN candidate",
-        )
-
-        ax.set_xlabel(f"Dimension {dim_a+1}")
-        ax.set_ylabel(f"Dimension {dim_b+1}")
-        ax.set_title(f"Dims {dim_a+1} vs {dim_b+1}", fontsize=10)
-        ax.grid(True)
-
-    # Hide unused axes
-    for ax in axes.flat[n_plots:]:
-        ax.set_visible(False)
-
-    # Shared colour bar
-    cbar = fig.colorbar(
-        contour,
-        ax=axes.ravel().tolist(),
-        shrink=0.9,
-        pad=0.02,
-    )
-    cbar.set_label("Predicted mean")
-
-    # Single legend
-    handles, labels = axes.flat[0].get_legend_handles_labels()
-
-    fig.legend(
-        handles,
-        labels,
-        loc="lower center",
-        ncol=4,
-        bbox_to_anchor=(0.5, 0.01),
-        frameon=True,
-    )
-
-    # Overall title
-    fig.suptitle(
-        f"{model_name} GP Posterior Mean Slices\n"
-        "Other dimensions fixed at the current best input",
-        fontsize=16,
-        y=0.99,
-    )
-
-    plt.tight_layout(rect=[0, 0.06, 0.93, 0.95])
-    plt.show()
-
-def plot_posterior_pair_matrix(
-    X,
-    trained_models,
-    best_input,
-    NN_best_input,
-    Thompson_best_input,
-    model_name="Matern",
-    grid_size=80,
-):
-    X = np.asarray(X)
-    best_input = np.asarray(best_input)
-    NN_best_input = np.asarray(NN_best_input)
-    Thompson_best_input = np.asarray(Thompson_best_input)
-
-    n_dims = X.shape[1]
-
-    if model_name not in trained_models:
-        raise KeyError(
-            f"{model_name} not found. Available models: {list(trained_models.keys())}"
-        )
-
-    gp = trained_models[model_name]
-
-    fig, axes = plt.subplots(
-        n_dims,
-        n_dims,
-        figsize=(3.2 * n_dims, 3.2 * n_dims),
-        squeeze=False,
-    )
-
-    contour = None
-
-    for row in range(n_dims):
-        for col in range(n_dims):
-            ax = axes[row, col]
-
-            if row == col:
-                ax.text(
-                    0.5,
-                    0.5,
-                    f"Dim {row + 1}",
-                    ha="center",
-                    va="center",
-                    fontsize=12,
-                    fontweight="bold",
-                    transform=ax.transAxes,
-                )
-                ax.set_xticks([])
-                ax.set_yticks([])
-                continue
-
-            dim_y = row
-            dim_x = col
-
-            x_vals = np.linspace(0.0, 1.0, grid_size)
-            y_vals = np.linspace(0.0, 1.0, grid_size)
-            xx, yy = np.meshgrid(x_vals, y_vals)
-
-            X_grid = np.tile(best_input, (grid_size * grid_size, 1))
-            X_grid[:, dim_x] = xx.ravel()
-            X_grid[:, dim_y] = yy.ravel()
-
-            mean_grid, _ = gp.predict(X_grid, return_std=True)
-            mean_grid = mean_grid.reshape(grid_size, grid_size)
-
-            contour = ax.contourf(xx, yy, mean_grid, levels=30)
-
-            ax.scatter(
-                X[:, dim_x],
-                X[:, dim_y],
-                marker="x",
-                s=18,
-                label="Observed samples",
-            )
-
-            ax.scatter(
-                best_input[dim_x],
-                best_input[dim_y],
-                s=90,
-                marker="o",
-                facecolors="none",
-                edgecolors="red",
-                linewidths=2,
-                label="GP / acquisition candidate",
-            )
-
-            ax.scatter(
-                Thompson_best_input[dim_x],
-                Thompson_best_input[dim_y],
-                s=90,
-                marker="D",
-                facecolors="none",
-                edgecolors="blue",
-                linewidths=2,
-                label="Thompson candidate",
-            )
-
-            ax.scatter(
-                NN_best_input[dim_x],
-                NN_best_input[dim_y],
-                s=90,
-                marker="s",
-                facecolors="none",
-                edgecolors="green",
-                linewidths=2,
-                label="NN candidate",
-            )
-
-            if row == n_dims - 1:
-                ax.set_xlabel(f"Dim {dim_x + 1}")
-
-            if col == 0:
-                ax.set_ylabel(f"Dim {dim_y + 1}")
-
-            ax.grid(True, alpha=0.3)
-
-    # Single colour bar
-    cbar = fig.colorbar(
-        contour,
-        ax=axes.ravel().tolist(),
-        shrink=0.85,
-        pad=0.02,
-    )
-    cbar.set_label("Predicted mean")
-
-    # Single shared legend
-    handles, labels = axes[0, 1].get_legend_handles_labels()
-
-    fig.legend(
-        handles,
-        labels,
-        loc="lower center",
-        ncol=4,
-        bbox_to_anchor=(0.5, 0.01),
-        frameon=True,
-    )
-
-    fig.suptitle(
-        f"{model_name} posterior pairwise matrix\n"
-        "Each subplot shows one dimension against another; other dimensions fixed at best_input",
-        fontsize=16,
-        y=0.995,
-    )
-
-    plt.tight_layout(rect=[0, 0.05, 0.93, 0.95])
-    plt.show()
-
-def plot_posterior_pair_matrix_lower_triangle(
-    X: np.ndarray,
-    trained_models: Mapping[str, Any],
-    best_input: np.ndarray,
-    NN_best_input: np.ndarray,
-    Thompson_best_input: np.ndarray,
-    n_dimensions: Optional[int] = None,
-    model_name: str = "Matern",
-    grid_size: int = 80,
-    levels: int = 30,
-    figsize_per_dim: float = 3.0,
-    save_path: Optional[str] = None,
-    show: bool = True,
-) -> None:
-    """
-    Plot lower-triangle pairwise 2D GP posterior mean slices.
-
-    Each lower-triangle subplot shows one input dimension against another.
-    The diagonal shows dimension labels.
-    The upper triangle is hidden.
-
-    Other dimensions are fixed at best_input.
-
-    Parameters
-    ----------
-    X:
-        Observed input samples, shape (n_samples, n_dimensions).
-    trained_models:
-        Mapping of model names to trained GP-like models.
-        The selected model must support predict(X_grid, return_std=True).
-    best_input:
-        Current GP/acquisition candidate or best known input.
-    NN_best_input:
-        Neural-network candidate input.
-    Thompson_best_input:
-        Thompson-sampling candidate input.
-    n_dimensions:
-        Number of dimensions to plot. If None, uses X.shape[1].
-    model_name:
-        Key into trained_models.
-    grid_size:
-        Number of grid samples per axis for each 2D slice.
-    levels:
-        Number of contour levels.
-    figsize_per_dim:
-        Figure scaling factor per dimension.
-    save_path:
-        Optional file path to save the figure, e.g. "figures/posterior_matrix.png".
-    show:
-        Whether to display the plot with plt.show().
-    """
-
-    X = np.asarray(X)
-    best_input = np.asarray(best_input).ravel()
-    NN_best_input = np.asarray(NN_best_input).ravel()
-    Thompson_best_input = np.asarray(Thompson_best_input).ravel()
-
-    if X.ndim != 2:
-        raise ValueError(f"X must be 2D, got shape {X.shape}")
-
-    if n_dimensions is None:
-        n_dimensions = X.shape[1]
-
-    if n_dimensions < 2:
-        raise ValueError("At least 2 dimensions are required for pairwise plotting.")
-
-    if n_dimensions > X.shape[1]:
-        raise ValueError(
-            f"n_dimensions={n_dimensions} exceeds X.shape[1]={X.shape[1]}"
-        )
-
-    for name, arr in {
-        "best_input": best_input,
-        "NN_best_input": NN_best_input,
-        "Thompson_best_input": Thompson_best_input,
-    }.items():
-        if arr.size < n_dimensions:
-            raise ValueError(
-                f"{name} has length {arr.size}, but n_dimensions={n_dimensions}"
-            )
-
-    if model_name not in trained_models:
-        available = ", ".join(trained_models.keys())
-        raise KeyError(
-            f"Model '{model_name}' not found. Available models: {available}"
-        )
-
-    gp = trained_models[model_name]
-
-    # ------------------------------------------------------------------
-    # First pass: compute all posterior mean grids so every subplot uses
-    # the same colour scale. This makes colours comparable across panels.
-    # ------------------------------------------------------------------
-    x_vals = np.linspace(0.0, 1.0, grid_size)
-    y_vals = np.linspace(0.0, 1.0, grid_size)
-    xx, yy = np.meshgrid(x_vals, y_vals)
-
-    mean_grids = {}
-    global_min = np.inf
-    global_max = -np.inf
-
-    for row in range(n_dimensions):
-        for col in range(row):
-            dim_y = row
-            dim_x = col
-
-            X_grid = np.tile(best_input, (grid_size * grid_size, 1))
-            X_grid[:, dim_x] = xx.ravel()
-            X_grid[:, dim_y] = yy.ravel()
-
-            mean_grid, _ = gp.predict(X_grid, return_std=True)
-            mean_grid = np.asarray(mean_grid).reshape(grid_size, grid_size)
-
-            mean_grids[(row, col)] = mean_grid
-            global_min = min(global_min, float(np.nanmin(mean_grid)))
-            global_max = max(global_max, float(np.nanmax(mean_grid)))
-
-    if not mean_grids:
-        raise RuntimeError("No lower-triangle posterior grids were generated.")
-
-    if np.isclose(global_min, global_max):
-        pad = 1e-6 if global_min == 0 else abs(global_min) * 1e-6
-        global_min -= pad
-        global_max += pad
-
-    norm = Normalize(vmin=global_min, vmax=global_max)
-    contour_levels = np.linspace(global_min, global_max, levels)
-
-    # ------------------------------------------------------------------
-    # Plotting pass.
-    # constrained_layout avoids tight_layout warnings caused by shared
-    # colourbars, figure-level legends, and hidden axes.
-    # ------------------------------------------------------------------
-    fig, axes = plt.subplots(
-        n_dimensions,
-        n_dimensions,
-        figsize=(figsize_per_dim * n_dimensions, figsize_per_dim * n_dimensions),
-        squeeze=False,
-        constrained_layout=True,
-    )
-
-    contour = None
-    legend_handles = None
-    legend_labels = None
-
-    for row in range(n_dimensions):
-        for col in range(n_dimensions):
-            ax = axes[row, col]
-
-            # Upper triangle: hidden because it duplicates the lower triangle.
-            if col > row:
-                ax.set_visible(False)
-                continue
-
-            # Diagonal: dimension labels only.
-            if row == col:
-                ax.text(
-                    0.5,
-                    0.5,
-                    f"Dim {row + 1}",
-                    ha="center",
-                    va="center",
-                    fontsize=12,
-                    fontweight="bold",
-                    transform=ax.transAxes,
-                )
-                ax.set_xticks([])
-                ax.set_yticks([])
-                ax.grid(False)
-                continue
-
-            dim_y = row
-            dim_x = col
-            mean_grid = mean_grids[(row, col)]
-
-            contour = ax.contourf(
-                xx,
-                yy,
-                mean_grid,
-                levels=contour_levels,
-                norm=norm,
-            )
-
-            ax.scatter(
-                X[:, dim_x],
-                X[:, dim_y],
-                marker="x",
-                s=20,
-                c="black",
-                label="Observed samples",
-            )
-
-            ax.scatter(
-                best_input[dim_x],
-                best_input[dim_y],
-                s=110,
-                marker="o",
-                facecolors="none",
-                edgecolors="red",
-                linewidths=2,
-                label="GP / acquisition candidate",
-            )
-
-            ax.scatter(
-                Thompson_best_input[dim_x],
-                Thompson_best_input[dim_y],
-                s=110,
-                marker="D",
-                facecolors="none",
-                edgecolors="blue",
-                linewidths=2,
-                label="Thompson candidate",
-            )
-
-            ax.scatter(
-                NN_best_input[dim_x],
-                NN_best_input[dim_y],
-                s=110,
-                marker="s",
-                facecolors="none",
-                edgecolors="green",
-                linewidths=2,
-                label="NN candidate",
-            )
-
-            ax.set_xlim(0.0, 1.0)
-            ax.set_ylim(0.0, 1.0)
-
-            if row == n_dimensions - 1:
-                ax.set_xlabel(f"Dim {dim_x + 1}")
-            else:
-                ax.set_xticklabels([])
-
-            if col == 0:
-                ax.set_ylabel(f"Dim {dim_y + 1}")
-            else:
-                ax.set_yticklabels([])
-
-            ax.set_title(f"Dim {dim_y + 1} vs Dim {dim_x + 1}", fontsize=9)
-            ax.grid(True, alpha=0.3)
-
-            if legend_handles is None:
-                legend_handles, legend_labels = ax.get_legend_handles_labels()
-
-    fig.suptitle(
-        f"{model_name} GP posterior mean pairwise matrix\n"
-        "Lower triangle only; other dimensions fixed at best_input",
-        fontsize=16,
-    )
-
-    if contour is not None:
-        cbar = fig.colorbar(
-            contour,
-            ax=axes,
-            fraction=0.025,
-            pad=0.02,
-        )
-        cbar.set_label("Predicted mean")
-
-    if legend_handles is not None:
-        fig.legend(
-            legend_handles,
-            legend_labels,
-            loc="center left",
-            bbox_to_anchor=(1.01, 0.5),
-            frameon=True,
-        )
-
-    plt.show()
-
-    #if save_path is not None:
-    #    fig.savefig(save_path, dpi=300, bbox_inches="tight")
-
-    #if show:
-    #    plt.show()
-    #else:
-    #    plt.close(fig)
 
 def run_gp_diagnostics(
     X: np.ndarray,
@@ -1467,20 +874,20 @@ def run_gp_diagnostics(
 
     fixed_slice_center = np.full(X.shape[1], 0.5)
 
-    #plot_gp_posterior_slices_grid_fixed(
-    #X=X,
-    #y=y,
-    #trained_models=trained_models,
-    #best_input=best_input,
-    #NN_best_input=NN_best_input,
-    #Thompson_best_input=Thompson_best_input,
-    #ensemble_mean=ensemble_mean,
-    #best_idx=best_idx,
-    #week_dataset=week_dataset,
-    #thompson_best_idx=thompson_best_idx,
-    #nn_best_idx=nn_best_idx,
-    #slice_center=fixed_slice_center,
-#)
+    plot_gp_posterior_slices_grid_fixed(
+    X=X,
+    y=y,
+    trained_models=trained_models,
+    best_input=best_input,
+    NN_best_input=NN_best_input,
+    Thompson_best_input=Thompson_best_input,
+    ensemble_mean=ensemble_mean,
+    best_idx=best_idx,
+    week_dataset=week_dataset,
+    thompson_best_idx=thompson_best_idx,
+    nn_best_idx=nn_best_idx,
+    slice_center=fixed_slice_center,
+)
 
     plot_training_fit(X=X, y=y, trained_models=trained_models)
     print_training_std_report(X=X, trained_models=trained_models)
@@ -1516,45 +923,15 @@ def run_gp_diagnostics(
         nn_best_idx=nn_best_idx,
     )
 
-    #plot_2d_posterior_slices(
-    #    X=X,
-    #    trained_models=trained_models,
-    #    best_input=best_input,
-    #    NN_best_input=NN_best_input,
-    #    Thompson_best_input=Thompson_best_input,
-    #    n_dimensions=n_dimensions,
-    #    model_name=posterior_2d_model_name,
-    #    grid_size=posterior_2d_grid_size,
-   # )
-
-    #plot_posterior_pair_matrix(
-    #    X=X,
-    #    trained_models=trained_models,
-    #    best_input=best_input,
-    #    NN_best_input=NN_best_input,
-    #    Thompson_best_input=Thompson_best_input,
-   #     model_name=posterior_2d_model_name,
-    #    grid_size=posterior_2d_grid_size,
-    #)
-
-    #plot_posterior_pair_matrix_lower_triangle(
-    #X=X,
-    #trained_models=trained_models,
-    #best_input=best_input,
-    #NN_best_input=NN_best_input,
-    #Thompson_best_input=Thompson_best_input,
-    #model_name="Matern",
-   # grid_size=80,
-    #)
-    
-    plot_posterior_pair_matrix_lower_triangle(
-    X=X,
-    trained_models=trained_models,
-    best_input=best_input,
-    NN_best_input=NN_best_input,
-    Thompson_best_input=Thompson_best_input,
-    model_name="RBF",
-    grid_size=80,
-)
+    plot_2d_posterior_slices(
+        X=X,
+        trained_models=trained_models,
+        best_input=best_input,
+        NN_best_input=NN_best_input,
+        Thompson_best_input=Thompson_best_input,
+        n_dimensions=n_dimensions,
+        model_name=posterior_2d_model_name,
+        grid_size=posterior_2d_grid_size,
+    )
 
     print("\nProcess complete.")
