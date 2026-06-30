@@ -172,6 +172,10 @@ Before submission, diagnostic tools are used to assess model behaviour and candi
       └──────┬───────┘
              ▼
 ┌─────────────────────────┐
+│ Details Report          │
+└────────────┬────────────┘
+             ▼
+┌─────────────────────────┐
 │ Diagnostics             │
 └────────────┬────────────┘
              ▼
@@ -244,7 +248,7 @@ The fifth iteration refined the neural-network surrogate and improved project st
 
 ### Week 6 - Improved reporting and plots
 
-Worked on improving reporting and explination of next choice.
+Worked on improving reporting and explanation of next choice.
 
 **Key improvements:**
 
