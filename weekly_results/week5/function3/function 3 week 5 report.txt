@@ -1,0 +1,182 @@
+==================================================
+OPTIMISATION REPORT
+==================================================
+==================================================
+1. DATASET SUMMARY
+==================================================
+Function / dataset: 3
+Week dataset: 5
+Samples used: 20
+Input dimensions: 3
+Samples per dimension: 6.6667
+Observed y min: 0.013122
+Observed y max: 0.476229
+Observed y mean: 0.150077
+Best observed input: [0.334285 1.       1.      ]
+Best observed output: 0.476229
+==================================================
+
+2. SEARCH STRATEGY
+==================================================
+Progress through budget: 0.3846
+Exploration weight / UCB: 0.5885
+Exploitation weight / EI: 0.4115
+EI / PI xi: 0.00653846
+Generated candidates before filtering: 259807
+Candidates used after filtering: 12877
+SVM filtering enabled: True
+==================================================
+
+3. GP TRAINING QUALITY
+==================================================
+
+Matern
+  Training MAE: 0.000386
+  Training RMSE: 0.000490
+  Relative RMSE: 0.001058
+  Max training std: 0.004636
+  Learned kernel: 1.16**2 * Matern(length_scale=0.667, nu=1.5)
+
+RationalQuadratic
+  Training MAE: 0.000424
+  Training RMSE: 0.000552
+  Relative RMSE: 0.001192
+  Max training std: 0.004637
+  Learned kernel: 2.23**2 * RationalQuadratic(alpha=0.1, length_scale=0.808)
+
+RBF
+  Training MAE: 0.000659
+  Training RMSE: 0.000822
+  Relative RMSE: 0.001776
+  Max training std: 0.004637
+  Learned kernel: 0.91**2 * RBF(length_scale=0.304)
+==================================================
+
+4. INDIVIDUAL GP ACQUISITION SUGGESTIONS
+==================================================
+
+Matern + UCB
+  Input: [0.02185  0.998677 0.973046]
+  Predicted mean: 0.453782
+  Predicted std: 0.085141
+  Acquisition score: 0.624064
+
+Matern + EI
+  Input: [0.085045 0.961402 0.998882]
+  Predicted mean: 0.476655
+  Predicted std: 0.069954
+  Acquisition score: 0.0249579
+
+Matern + PI
+  Input: [0.24252  0.970875 0.999419]
+  Predicted mean: 0.489937
+  Predicted std: 0.033080
+  Acquisition score: 0.585782
+
+RationalQuadratic + UCB
+  Input: [0.02185  0.998677 0.973046]
+  Predicted mean: 0.450247
+  Predicted std: 0.087581
+  Acquisition score: 0.625408
+
+RationalQuadratic + EI
+  Input: [0.098277 0.980972 0.994341]
+  Predicted mean: 0.472988
+  Predicted std: 0.070664
+  Acquisition score: 0.0235705
+
+RationalQuadratic + PI
+  Input: [0.24252  0.970875 0.999419]
+  Predicted mean: 0.488189
+  Predicted std: 0.032400
+  Acquisition score: 0.56644
+
+RBF + UCB
+  Input: [0.132701 0.947501 0.885477]
+  Predicted mean: 0.434623
+  Predicted std: 0.078721
+  Acquisition score: 0.592064
+
+RBF + EI
+  Input: [0.193118 0.881153 0.995327]
+  Predicted mean: 0.480332
+  Predicted std: 0.049289
+  Acquisition score: 0.0184696
+
+RBF + PI
+  Input: [0.276937 0.925721 0.993939]
+  Predicted mean: 0.486162
+  Predicted std: 0.029102
+  Acquisition score: 0.546428
+==================================================
+
+5. FINAL HYBRID DECISION
+==================================================
+Best next input: [0.173804 0.955042 0.999257]
+Ensemble predicted mean: 0.481227
+Ensemble predicted std: 0.053968
+Estimated EI: 0.0207685
+Estimated UCB: 0.589163
+Estimated PI: 0.488613
+Final acquisition score: 0.953944
+Note: The final acquisition score is a normalized relative score within the candidate set, not an absolute probability of success.
+==================================================
+
+6. CROSS-MODEL AGREEMENT
+==================================================
+GP / hybrid candidate: [0.173804 0.955042 0.999257]
+Distance to best observed input: 0.166661
+Distance to nearest observed sample: 0.166661
+Search behaviour: Regional exploration / exploitation
+Mean pairwise distance between acquisition suggestions: 0.140237
+Acquisition-function agreement: High
+Thompson candidate: [0.161989 0.898845 0.963592]
+Distance GP to Thompson: 0.067599
+GP / Thompson agreement: High
+NN candidate: [0.233867 1.       1.      ]
+Distance GP to NN: 0.075029
+GP / NN agreement: High
+GP mean at NN candidate: 0.484627
+GP std at NN candidate: 0.037681
+==================================================
+
+7. CONVERGENCE DIAGNOSTICS
+==================================================
+Posterior uncertainty at selected point: 0.053968
+Uncertainty level: Moderate
+Expected Improvement is still active, suggesting the model sees some possibility of improvement.
+Probability of Improvement is still non-negligible.
+==================================================
+
+8. DECISION TYPE
+==================================================
+Strategy: Regional exploration / exploitation
+Reason: The selected point is in the same broad region as the current best sample but far enough away to test the local shape of the response surface.
+Nearest-sample note: the candidate is not close to existing samples, so the query will add information in a relatively unexplored part of the domain.
+==================================================
+
+9. INTERPRETATION
+==================================================
+The selected candidate has low-to-moderate uncertainty.
+The hybrid GP and Thompson candidates broadly agree.
+The GP ensemble and NN surrogate broadly agree on the same promising region.
+==================================================
+
+10. OPTIMISER CONFIDENCE
+==================================================
+Overall optimiser confidence: VERY HIGH
+Confidence score: 5.0 / 5.0
+Reasons:
+  - GP training error is small relative to the observed output range
+  - posterior uncertainty is moderate at the selected point
+  - GP acquisition functions broadly agree
+  - Thompson sampling supports the GP candidate
+  - neural surrogate supports the GP candidate
+==================================================
+
+11. FINAL RECOMMENDATION
+==================================================
+Submit next query: [0.173804 0.955042 0.999257]
+
+===============================================================
+
