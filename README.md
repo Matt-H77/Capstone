@@ -257,7 +257,7 @@ Worked on improving reporting and explanation of next choice.
 
 Summary
 
-### Week 7
+### Week 7 - Improved reporting and code refactoring
 
 During Week 7, the focus shifted from developing new optimisation algorithms to improving the robustness, interpretability, and usability of the optimisation framework. The Bayesian Optimisation pipeline was enhanced with additional machine learning support, expanded diagnostics, and improved reporting to provide greater confidence when selecting the next experimental evaluation. The framework now not only identifies promising candidates but also explains the reasoning behind each recommendation using evidence from multiple models.
 
