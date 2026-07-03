@@ -125,6 +125,20 @@ def append_input_and_output_data(
             prevent_duplicates
         )
 
+    # Append new data from week 6
+    if week_dataset >= 6:
+        new_inputs_file = "data/new_data/inputs_week6.txt"
+        new_outputs_file = "data/new_data/outputs_week6.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
     return (existing_inputs, existing_outputs)
 
 # This function appends a single input/output pair from text files to existing arrays of inputs and outputs.

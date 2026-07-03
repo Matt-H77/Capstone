@@ -531,10 +531,6 @@ def print_automatic_optimisation_report(
 
     d_thompson = None
     d_nn = None
-    d_svm = None
-    best_input_thompson = None
-    nn_candidate = None
-    svm_candidate = None
 
     if has("best_input_thompson"):
         best_input_thompson = np.asarray(get("best_input_thompson"), dtype=float)
@@ -554,62 +550,6 @@ def print_automatic_optimisation_report(
             print(f"GP mean at NN candidate: {get('nn_gp_ensemble_mean'):.6f}")
         if has("nn_gp_ensemble_std"):
             print(f"GP std at NN candidate: {get('nn_gp_ensemble_std'):.6f}")
-
-    if has("svm_candidate"):
-        svm_candidate = np.asarray(get("svm_candidate"), dtype=float)
-        d_svm = np.linalg.norm(best_input - svm_candidate)
-        print(f"SVM candidate: {arr(svm_candidate)}")
-        print(f"Distance GP to SVM: {d_svm:.6f}")
-        print(f"GP / SVM agreement: {agreement_label(d_svm)}")
-
-        if has("svm_gp_mean"):
-            print(f"GP mean at SVM candidate: {get('svm_gp_mean'):.6f}")
-        if has("svm_gp_std"):
-            print(f"GP std at SVM candidate: {get('svm_gp_std'):.6f}")
-        if has("svm_gp_ei"):
-            print(f"EI at SVM candidate: {get('svm_gp_ei'):.6g}")
-
-    # Candidate agreement matrix across all available candidate generators.
-    agreement_candidates = [("GP", np.asarray(best_input, dtype=float))]
-    if best_input_thompson is not None:
-        agreement_candidates.append(("Thompson", best_input_thompson))
-    if nn_candidate is not None:
-        agreement_candidates.append(("NN", nn_candidate))
-    if svm_candidate is not None:
-        agreement_candidates.append(("SVM", svm_candidate))
-
-    if len(agreement_candidates) >= 3:
-        names = [name for name, _ in agreement_candidates]
-        points = [point for _, point in agreement_candidates]
-        width = max(10, max(len(name) for name in names) + 2)
-
-        print("\nCandidate agreement distance matrix")
-        print("".ljust(width) + "".join(name.rjust(12) for name in names))
-        pairwise_distances = []
-        for i, name_i in enumerate(names):
-            row = name_i.ljust(width)
-            for j in range(len(names)):
-                distance = float(np.linalg.norm(points[i] - points[j]))
-                row += f"{distance:12.6f}"
-                if i < j:
-                    pairwise_distances.append(distance)
-            print(row)
-
-        if pairwise_distances:
-            mean_consensus_distance = float(np.mean(pairwise_distances))
-            max_consensus_distance = float(np.max(pairwise_distances))
-            print(f"Mean cross-model distance: {mean_consensus_distance:.6f}")
-            print(f"Max cross-model distance: {max_consensus_distance:.6f}")
-            print(f"Overall candidate consensus: {agreement_label(mean_consensus_distance)}")
-
-            if mean_consensus_distance < 0.05:
-                print("Consensus summary: all available candidate generators are concentrated in almost the same region.")
-            elif mean_consensus_distance < 0.15:
-                print("Consensus summary: the available candidate generators broadly support the same region.")
-            elif mean_consensus_distance < 0.30:
-                print("Consensus summary: the available candidate generators show partial agreement but with visible spread.")
-            else:
-                print("Consensus summary: the available candidate generators disagree, so treat the final query as less strongly supported.")
 
     print("==================================================")
     print("\n8. CONVERGENCE DIAGNOSTICS")
@@ -722,14 +662,6 @@ def print_automatic_optimisation_report(
         else:
             print("The GP ensemble and NN surrogate disagree, so the neural surrogate is not supporting this query.")
 
-    if d_svm is not None:
-        if d_svm < 0.15:
-            print("The SVM candidate supports the same promising region as the GP hybrid candidate.")
-        elif d_svm < 0.30:
-            print("The SVM candidate gives partial support, but is displaced from the final GP candidate.")
-        else:
-            print("The SVM candidate differs noticeably from the GP hybrid candidate, so the SVM is not giving strong spatial support.")
-
     print("==================================================")
     print("\n11. OPTIMISER CONFIDENCE")
     print("==================================================")
@@ -774,16 +706,8 @@ def print_automatic_optimisation_report(
             confidence_score += 0.5
             confidence_reasons.append("neural surrogate gives partial support")
 
-    if d_svm is not None:
-        if d_svm < 0.15:
-            confidence_score += 1.0
-            confidence_reasons.append("SVM candidate supports the GP candidate")
-        elif d_svm < 0.30:
-            confidence_score += 0.5
-            confidence_reasons.append("SVM candidate gives partial support")
-
     print(f"Overall optimiser confidence: {confidence_label(confidence_score)}")
-    print(f"Confidence score: {confidence_score:.1f} / 6.0")
+    print(f"Confidence score: {confidence_score:.1f} / 5.0")
     print("Reasons:")
 
     if confidence_reasons:

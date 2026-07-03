@@ -181,11 +181,13 @@ def plot_gp_posterior_slices_grid(
     best_input: np.ndarray,
     NN_best_input: np.ndarray,
     Thompson_best_input: np.ndarray,
+    SVM_best_input: np.ndarray,
     ensemble_mean: np.ndarray,
     best_idx: int,
     week_dataset: int,
     thompson_best_idx: Optional[int] = None,
     nn_best_idx: Optional[int] = None,
+    SVM_best_idx: Optional[int] = None,
     n_dimensions: Optional[int] = None,
     beta: float = 2.0,
     grid_size: int = 500,
@@ -201,7 +203,7 @@ def plot_gp_posterior_slices_grid(
     best_input = np.asarray(best_input)
     NN_best_input = np.asarray(NN_best_input)
     Thompson_best_input = np.asarray(Thompson_best_input)
-
+    SVM_best_input = np.asarray(SVM_best_input)
     if n_dimensions is None:
         n_dimensions = X.shape[1]
 
@@ -216,6 +218,11 @@ def plot_gp_posterior_slices_grid(
     nn_candidate_y = (
         ensemble_mean[nn_best_idx]
         if nn_best_idx is not None
+        else gp_candidate_y
+    )
+    svm_candidate_y = (
+        ensemble_mean[SVM_best_idx]
+        if SVM_best_idx is not None
         else gp_candidate_y
     )
 
@@ -317,6 +324,16 @@ def plot_gp_posterior_slices_grid(
             edgecolors="blue",
         )
 
+        ax.scatter(
+            SVM_best_input[dim],
+            svm_candidate_y,
+            marker="^",
+            s=80,
+            linewidths=2,
+            facecolors="none",
+            edgecolors="purple",
+        )
+
         ax.set_title(f"Dimension {dim+1}")
         ax.set_xlabel(f"Input dimension {dim+1}")
         ax.set_ylabel("Predicted output")
@@ -333,6 +350,7 @@ def plot_gp_posterior_slices_grid(
         Line2D([], [], marker="o", linestyle="None", markerfacecolor="none", markeredgecolor="red", markersize=8, label="GP / acquisition candidate"),
         Line2D([], [], marker="D", linestyle="None", markerfacecolor="none", markeredgecolor="blue", markersize=8, label="Thompson candidate"),
         Line2D([], [], marker="s", linestyle="None", markerfacecolor="none", markeredgecolor="green", markeredgewidth=2, markersize=8, label="NN candidate", ),
+        Line2D([], [], marker="^", linestyle="None", markerfacecolor="none", markeredgecolor="purple", markeredgewidth=2, markersize=8, label="SVM candidate", ),
     ]
 
     fig.legend(
@@ -587,14 +605,16 @@ def plot_acquisition_score_distribution(
     best_idx: int,
     thompson_best_idx: Optional[int] = None,
     nn_best_idx: Optional[int] = None,
+    SVM_best_idx: Optional[int] = None,
 ) -> None:
-    """Plot final acquisition scores and mark GP, Thompson, and NN candidates."""
+    """Plot final acquisition scores and mark GP, Thompson, NN, and SVM candidates."""
     plt.figure(figsize=(8, 6))
     plt.hist(final_score, bins=50)
 
     plt.axvline(
         final_score[best_idx],
         linestyle="--",
+        color="red",
         label="GP / acquisition candidate",
     )
 
@@ -602,6 +622,7 @@ def plot_acquisition_score_distribution(
         plt.axvline(
             final_score[thompson_best_idx],
             linestyle=":",
+            color="blue",
             label="Thompson candidate",
         )
 
@@ -609,7 +630,16 @@ def plot_acquisition_score_distribution(
         plt.axvline(
             final_score[nn_best_idx],
             linestyle="-.",
+            color="green",
             label="NN candidate",
+        )
+
+    if SVM_best_idx is not None:
+        plt.axvline(
+            final_score[SVM_best_idx],
+            linestyle="--",
+            color="purple",
+            label="SVM candidate",
         )
 
     plt.xlabel("Final acquisition score")
@@ -703,8 +733,9 @@ def plot_candidate_mean_vs_uncertainty(
     best_idx: int,
     thompson_best_idx: int,
     nn_best_idx: Optional[int] = None,
+    SVM_best_idx: Optional[int] = None,
 ) -> None:
-    """Plot candidate mean vs uncertainty, marking GP, Thompson, and NN candidates."""
+    """Plot candidate mean vs uncertainty, marking GP, Thompson, NN, and SVM candidates."""
 
     def add_candidate_markers() -> None:
         plt.scatter(
@@ -740,6 +771,18 @@ def plot_candidate_mean_vs_uncertainty(
                 linewidths=2,
                 label="NN candidate",
                 zorder=12,
+            )
+        if SVM_best_idx is not None:
+            plt.scatter(
+                ensemble_mean[SVM_best_idx],
+                ensemble_std[SVM_best_idx],
+                s=140,
+                marker="^",
+                facecolors="none",
+                edgecolors="purple",
+                linewidths=2,
+                label="SVM candidate",
+                zorder=13,
             )
 
     plt.figure(figsize=(8, 6))
@@ -1149,6 +1192,7 @@ def plot_posterior_pair_matrix_lower_triangle(
     best_input: np.ndarray,
     NN_best_input: np.ndarray,
     Thompson_best_input: np.ndarray,
+    SVM_best_input: np.ndarray,
     n_dimensions: Optional[int] = None,
     model_name: str = "Matern",
     grid_size: int = 80,
@@ -1218,6 +1262,7 @@ def plot_posterior_pair_matrix_lower_triangle(
         "best_input": best_input,
         "NN_best_input": NN_best_input,
         "Thompson_best_input": Thompson_best_input,
+        "SVM_best_input": SVM_best_input,
     }.items():
         if arr.size < n_dimensions:
             raise ValueError(
@@ -1368,6 +1413,17 @@ def plot_posterior_pair_matrix_lower_triangle(
                 label="NN candidate",
             )
 
+            ax.scatter(
+                SVM_best_input[dim_x],
+                SVM_best_input[dim_y],
+                s=110,
+                marker="^",
+                facecolors="none",
+                edgecolors="purple",
+                linewidths=2,
+                label="SVM candidate",
+            )
+
             ax.set_xlim(0.0, 1.0)
             ax.set_ylim(0.0, 1.0)
 
@@ -1428,11 +1484,13 @@ def run_gp_diagnostics(
     best_input: np.ndarray,
     NN_best_input: np.ndarray,
     Thompson_best_input: np.ndarray,
+    SVM_best_input: np.ndarray,
     ensemble_mean: np.ndarray,
     ensemble_std: np.ndarray,
     final_score: np.ndarray,
     best_idx: int,
     thompson_best_idx: int,
+    SVM_best_idx: int,
     candidates: np.ndarray,
     week_dataset: int,
     n_dimensions: Optional[int] = None,
@@ -1455,11 +1513,13 @@ def run_gp_diagnostics(
         best_input=best_input,
         NN_best_input=NN_best_input,
         Thompson_best_input=Thompson_best_input,
+        SVM_best_input=SVM_best_input,
         ensemble_mean=ensemble_mean,
         best_idx=best_idx,
         week_dataset=week_dataset,
         thompson_best_idx=thompson_best_idx,
         nn_best_idx=nn_best_idx,
+        SVM_best_idx=SVM_best_idx,
         n_dimensions=n_dimensions,
         beta=beta,
         grid_size=slice_grid_size,
@@ -1489,6 +1549,7 @@ def run_gp_diagnostics(
         best_idx=best_idx,
         thompson_best_idx=thompson_best_idx,
         nn_best_idx=nn_best_idx,
+        SVM_best_idx=SVM_best_idx
     )
 
     print_candidate_score_report(
@@ -1514,6 +1575,7 @@ def run_gp_diagnostics(
         best_idx=best_idx,
         thompson_best_idx=thompson_best_idx,
         nn_best_idx=nn_best_idx,
+        SVM_best_idx=SVM_best_idx
     )
 
     #plot_2d_posterior_slices(
@@ -1553,6 +1615,7 @@ def run_gp_diagnostics(
     best_input=best_input,
     NN_best_input=NN_best_input,
     Thompson_best_input=Thompson_best_input,
+    SVM_best_input=SVM_best_input,
     model_name="RBF",
     grid_size=80,
 )
