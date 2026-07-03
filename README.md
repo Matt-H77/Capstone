@@ -255,6 +255,31 @@ Worked on improving reporting and explanation of next choice.
 - Added more detailed report on models and reasoning for next choice of candidate.
 - GP diagnostics, tweaked plots for better visual inspection.
 
+Summary
+
+### Week 7
+
+During Week 7, the focus shifted from developing new optimisation algorithms to improving the robustness, interpretability, and usability of the optimisation framework. The Bayesian Optimisation pipeline was enhanced with additional machine learning support, expanded diagnostics, and improved reporting to provide greater confidence when selecting the next experimental evaluation. The framework now not only identifies promising candidates but also explains the reasoning behind each recommendation using evidence from multiple models.
+
+**Key Improvements:**
+
+- Support Vector Machine (SVM) Candidate Filtering
+- Introduced an SVM classifier to estimate the likelihood that candidate points belong to high-performing regions before Gaussian Process optimisation.
+- Reduced the number of low-quality candidates considered while maintaining exploration through probability thresholds and random candidate injection.
+- Enhanced Candidate Comparison
+- Developed a comprehensive comparison table showing recommendations from the Gaussian Process, Thompson Sampling, Neural Network, and SVM.
+- Added rankings, uncertainty measures, acquisition function values, and distances between model recommendations to simplify candidate evaluation.
+- Cross-Model Agreement Analysis
+- Added a new reporting section that measures agreement between the Gaussian Process, Thompson Sampling, Neural Network, and SVM recommendations.
+- Improved confidence in candidate selection by identifying when multiple independent models converge on the same region of the search space.
+- Expanded Optimisation Reporting
+- Extended the automatically generated optimisation report with additional diagnostic sections, including SVM candidate analysis and cross-model agreement.
+- Improved the interpretability of optimisation results by providing justification for the recommended experimental point rather than only reporting the final candidate.
+- Benchmark Function Analysis
+- Applied the enhanced reporting framework to analyse optimisation behaviour on benchmark functions, providing deeper insight into convergence, uncertainty, and the exploration–exploitation balance.
+- Code Refactoring
+- Continued modularising the project by moving analysis and reporting functionality from the notebook into reusable Python helper modules.
+- Improved code readability, maintainability, and ease of future development.
 ---
 
 ## 7. Current Strategy
