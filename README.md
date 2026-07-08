@@ -273,6 +273,19 @@ During Week 7, the focus shifted from developing new optimisation algorithms to 
 - Applied the enhanced reporting framework to analyse optimisation behaviour on benchmark functions, providing deeper insight into convergence, uncertainty, and the exploration–exploitation balance.
 - Continued modularising the project by moving analysis and reporting functionality from the notebook into reusable Python helper modules.
 - Improved code readability, maintainability, and ease of future development.
+
+## Week 8
+
+This week focused on validating the optimisation results by re-evaluating the best candidate from the previous week for each function, with the exception of Function 2 where the alternative high-potential basin was intentionally explored. The repeated evaluations were used to determine whether the objective functions behaved deterministically or exhibited observation noise.
+
+### Key Improvements
+
+* Validated the current optimum for Functions 1, 4, 5, 7 and 8 by obtaining identical outputs from repeated evaluations, confirming deterministic behaviour.
+* Investigated the secondary basin identified by the surrogate model for Function 2, reducing uncertainty in an unexplored region of the search space.
+* Identified observation noise in Functions 3 and 6, where repeated evaluations of the same input produced different outputs, providing an empirical estimate of measurement variability.
+* Updated the optimisation strategy to remove exact duplicate observations from deterministic datasets while retaining repeated measurements with differing outputs for noisy functions.
+* Increased confidence in the surrogate models by experimentally validating the assumptions underlying the Bayesian optimisation process.
+
 ---
 
 ## 7. Current Strategy
