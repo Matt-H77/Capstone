@@ -97,6 +97,14 @@ def tune_gp_hyperparameters(
             (0.05, 1e2),
             (1e-2, 1e2)
         ]
+    if load_dataset in [3, 6]:
+        kernel_names = ["RBF", "Matern", "RationalQuadratic"]
+        alpha_values = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 5e-2, 1e-1]
+        length_scale_bounds_options = [
+            (1e-3, 1e2),
+            (1e-2, 1e2),
+            (0.02, 1e2)
+        ]
     else:
         kernel_names = ["RBF", "Matern", "RationalQuadratic"]
         alpha_values = [1e-10, 1e-8, 1e-6, 1e-5, 1e-4, 1e-3]

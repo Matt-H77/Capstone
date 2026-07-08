@@ -139,6 +139,65 @@ def append_input_and_output_data(
             prevent_duplicates
         )
 
+    # Append new data from week 7
+    if week_dataset >= 7:
+        new_inputs_file = "data/new_data/inputs_week7.txt"
+        new_outputs_file = "data/new_data/outputs_week7.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 8
+    if week_dataset >= 8:
+        new_inputs_file = "data/new_data/inputs_week8.txt"
+        new_outputs_file = "data/new_data/outputs_week8.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 9
+    if week_dataset >= 9:
+        new_inputs_file = "data/new_data/inputs_week9.txt"
+        new_outputs_file = "data/new_data/outputs_week9.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 10
+    if week_dataset >= 10:
+        new_inputs_file = "data/new_data/inputs_week10.txt"
+        new_outputs_file = "data/new_data/outputs_week10.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    if week_dataset >= 11:
+        print("No additional data available for week 11 and beyond.")   
+
     return (existing_inputs, existing_outputs)
 
 # This function appends a single input/output pair from text files to existing arrays of inputs and outputs.
