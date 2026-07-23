@@ -58,6 +58,135 @@ def print_automatic_optimisation_report(
             return "Moderate"
         else:
             return "Low"
+
+    # Extract an ARD length-scale vector from a trained sklearn GP kernel.
+    # This supports compound kernels such as ConstantKernel * RBF or
+    # ConstantKernel * Matern.
+    def extract_length_scales_from_kernel(kernel, n_dimensions):
+        if kernel is None:
+            return None
+
+        # Search recursively through compound kernels.
+        for attribute_name in ("k1", "k2"):
+            child_kernel = getattr(kernel, attribute_name, None)
+
+            if child_kernel is not None:
+                result = extract_length_scales_from_kernel(
+                    child_kernel,
+                    n_dimensions
+                )
+
+                if result is not None:
+                    return result
+
+        if not hasattr(kernel, "length_scale"):
+            return None
+
+        length_scale = np.asarray(
+            kernel.length_scale,
+            dtype=float
+        )
+
+        # Scalar/isotropic kernels cannot provide dimension-specific
+        # ARD distances.
+        if length_scale.ndim == 0 or length_scale.size == 1:
+            return None
+
+        length_scale = length_scale.reshape(-1)
+
+        if length_scale.size != n_dimensions:
+            return None
+
+        # Avoid division by zero or invalid scales.
+        if not np.all(np.isfinite(length_scale)):
+            return None
+
+        if np.any(length_scale <= 0):
+            return None
+
+        return length_scale
+
+
+    def select_reference_ard_length_scales(trained_models, n_dimensions):
+        """
+        Prefer Matern ARD scales, then RBF, then any available
+        anisotropic GP kernel.
+        """
+        preferred_names = (
+            "Matern",
+            "Matérn",
+            "RBF"
+        )
+
+        for preferred_name in preferred_names:
+            for kernel_name, gp in trained_models.items():
+                if preferred_name.lower() in kernel_name.lower():
+                    length_scales = extract_length_scales_from_kernel(
+                        getattr(gp, "kernel_", None),
+                        n_dimensions
+                    )
+
+                    if length_scales is not None:
+                        return kernel_name, length_scales
+
+        for kernel_name, gp in trained_models.items():
+            length_scales = extract_length_scales_from_kernel(
+                getattr(gp, "kernel_", None),
+                n_dimensions
+            )
+
+            if length_scales is not None:
+                return kernel_name, length_scales
+
+        return None, None
+
+
+    def scaled_distance(point_a, point_b, length_scales):
+        point_a = np.asarray(point_a, dtype=float)
+        point_b = np.asarray(point_b, dtype=float)
+
+        if length_scales is None:
+            return float(
+                np.linalg.norm(point_a - point_b)
+            )
+
+        length_scales = np.asarray(
+            length_scales,
+            dtype=float
+        )
+
+        return float(
+            np.sqrt(
+                np.sum(
+                    (
+                        (point_a - point_b)
+                        / length_scales
+                    ) ** 2
+                )
+            )
+        )
+
+
+    def scaled_nearest_sample_distance(samples, point, length_scales):
+        samples = np.asarray(samples, dtype=float)
+        point = np.asarray(point, dtype=float)
+
+        if length_scales is None:
+            return float(
+                np.min(
+                    np.linalg.norm(
+                        samples - point,
+                        axis=1
+                    )
+                )
+            )
+
+        scaled_differences = (
+            samples - point
+        ) / length_scales
+
+        return float(np.min(np.linalg.norm(scaled_differences, axis=1)))
+        
     # Helper function to label uncertainty based on standard deviation
     def uncertainty_label(std_value):
         if std_value < 0.001:
@@ -71,13 +200,13 @@ def print_automatic_optimisation_report(
 
     # Helper function to label confidence based on score
     def confidence_label(score):
-        if score >= 4.0:
+        if score >= 5.0:
             return "VERY HIGH"
-        elif score >= 3.0:
+        elif score >= 4.0:
             return "HIGH"
-        elif score >= 2.0:
+        elif score >= 2.5:
             return "MODERATE"
-        elif score >= 1.0:
+        elif score >= 1.5:
             return "LOW / MODERATE"
         else:
             return "LOW"
@@ -485,6 +614,10 @@ def print_automatic_optimisation_report(
 
     median_training_rmse = float(np.median(training_errors)) if training_errors else None
 
+    # Use the strongest available anisotropic kernel geometry for
+    # high-dimensional distance diagnostics.
+    ard_kernel_name, ard_length_scales = (select_reference_ard_length_scales(trained_models, X.shape[1]))
+
     print("==================================================")
     print("\n5. INDIVIDUAL GP ACQUISITION SUGGESTIONS")
     print("==================================================")
@@ -497,6 +630,52 @@ def print_automatic_optimisation_report(
 
     acquisition_points = extract_top_candidate_inputs(results)
     acquisition_spread = mean_pairwise_distance(acquisition_points)
+    # A second consensus measure focused on suggestions from kernels
+    # with anisotropic relevance information. This usually gives a
+    # more meaningful summary in high-dimensional functions.
+    core_gp_points = []
+
+    for method, result in results.items():
+        method_lower = method.lower()
+
+        if (
+            "matern" in method_lower
+            or "matérn" in method_lower
+            or "rbf" in method_lower
+        ):
+            if isinstance(result, dict) and "input" in result:
+                core_gp_points.append(
+                    np.asarray(
+                        result["input"],
+                        dtype=float
+                    )
+                )
+
+    if len(core_gp_points) >= 2:
+        core_gp_points = np.vstack(core_gp_points)
+
+        if ard_length_scales is not None:
+            core_gp_pairwise_distances = []
+
+            for i in range(len(core_gp_points)):
+                for j in range(i + 1, len(core_gp_points)):
+                    core_gp_pairwise_distances.append(
+                        scaled_distance(
+                            core_gp_points[i],
+                            core_gp_points[j],
+                            ard_length_scales
+                        )
+                    )
+
+            core_gp_spread = float(
+                np.mean(core_gp_pairwise_distances)
+            )
+        else:
+            core_gp_spread = mean_pairwise_distance(
+                core_gp_points
+            )
+    else:
+        core_gp_spread = None
 
     print("==================================================")
     print("\n6. FINAL HYBRID DECISION")
@@ -518,16 +697,95 @@ def print_automatic_optimisation_report(
     print("==================================================")
     print(f"GP / hybrid candidate: {arr(best_input)}")
 
-    distance_to_best_observed = np.linalg.norm(best_input - best_observed_input)
-    nearest_sample_distance = float(np.min(np.linalg.norm(X - best_input, axis=1)))
+    #distance_to_best_observed = np.linalg.norm(best_input - best_observed_input)
+    #nearest_sample_distance = float(np.min(np.linalg.norm(X - best_input, axis=1)))
 
-    print(f"Distance to best observed input: {distance_to_best_observed:.6f}")
-    print(f"Distance to nearest observed sample: {nearest_sample_distance:.6f}")
-    print(f"Search behaviour: {classify_search_behaviour(distance_to_best_observed)}")
+    #print(f"Distance to best observed input: {distance_to_best_observed:.6f}")
+    #print(f"Distance to nearest observed sample: {nearest_sample_distance:.6f}")
+    #print(f"Search behaviour: {classify_search_behaviour(distance_to_best_observed)}")
+
+    distance_to_best_observed = float(
+        np.linalg.norm(
+            best_input - best_observed_input
+        )
+    )
+
+    nearest_sample_distance = float(
+        np.min(
+            np.linalg.norm(
+                X - best_input,
+                axis=1
+            )
+        )
+    )
+
+    ard_distance_to_best_observed = scaled_distance(
+        best_input,
+        best_observed_input,
+        ard_length_scales
+    )
+
+    ard_nearest_sample_distance = (
+        scaled_nearest_sample_distance(
+            X,
+            best_input,
+            ard_length_scales
+        )
+    )
+
+    print(
+        f"Raw distance to best observed input: "
+        f"{distance_to_best_observed:.6f}"
+    )
+
+    print(
+        f"Raw distance to nearest observed sample: "
+        f"{nearest_sample_distance:.6f}"
+    )
+
+    if ard_length_scales is not None:
+        print(
+            f"ARD reference kernel: "
+            f"{ard_kernel_name}"
+        )
+
+        print(
+            f"ARD-scaled distance to best observed input: "
+            f"{ard_distance_to_best_observed:.6f}"
+        )
+
+        print(
+            f"ARD-scaled distance to nearest observed sample: "
+            f"{ard_nearest_sample_distance:.6f}"
+        )
+
+        search_distance = ard_distance_to_best_observed
+
+        print(
+            "Search behaviour uses ARD-scaled distance because "
+            "the trained GP has dimension-specific length scales."
+        )
+    else:
+        search_distance = distance_to_best_observed
+
+    print(
+        f"Search behaviour: "
+        f"{classify_search_behaviour(search_distance)}"
+    )
 
     if acquisition_spread is not None:
         print(f"Mean pairwise distance between acquisition suggestions: {acquisition_spread:.6f}")
         print(f"Acquisition-function agreement: {agreement_label(acquisition_spread)}")
+        if core_gp_spread is not None:
+            print(
+                f"Core Matérn/RBF acquisition spread: "
+                f"{core_gp_spread:.6f}"
+            )
+
+            print(
+                f"Core GP acquisition agreement: "
+                f"{agreement_label(core_gp_spread)}"
+            )
 
     d_thompson = None
     d_nn = None
@@ -538,17 +796,58 @@ def print_automatic_optimisation_report(
 
     if has("best_input_thompson"):
         best_input_thompson = np.asarray(get("best_input_thompson"), dtype=float)
-        d_thompson = np.linalg.norm(best_input - best_input_thompson)
+        #d_thompson = np.linalg.norm(best_input - best_input_thompson)
+        d_thompson_raw = float(np.linalg.norm(best_input - best_input_thompson))
+
+        d_thompson = scaled_distance(
+            best_input,
+            best_input_thompson,
+            ard_length_scales
+        )
+
+        print(f"Raw distance GP to Thompson: " f"{d_thompson_raw:.6f}" )
+
+        if ard_length_scales is not None:
+            print(f"ARD-scaled distance GP to Thompson: " f"{d_thompson:.6f}")
+            
         print(f"Thompson candidate: {arr(best_input_thompson)}")
         print(f"Distance GP to Thompson: {d_thompson:.6f}")
         print(f"GP / Thompson agreement: {agreement_label(d_thompson)}")
 
     if has("nn_candidate"):
         nn_candidate = np.asarray(get("nn_candidate"), dtype=float)
-        d_nn = np.linalg.norm(best_input - nn_candidate)
+        #d_nn = np.linalg.norm(best_input - nn_candidate)
+        #print(f"NN candidate: {arr(nn_candidate)}")
+        #print(f"Distance GP to NN: {d_nn:.6f}")
+        #print(f"GP / NN agreement: {agreement_label(d_nn)}")
+        d_nn_raw = float(
+            np.linalg.norm(
+                best_input - nn_candidate
+            )
+        )
+
+        d_nn = scaled_distance(
+            best_input,
+            nn_candidate,
+            ard_length_scales
+        )
+
         print(f"NN candidate: {arr(nn_candidate)}")
-        print(f"Distance GP to NN: {d_nn:.6f}")
-        print(f"GP / NN agreement: {agreement_label(d_nn)}")
+        print(
+            f"Raw distance GP to NN: "
+            f"{d_nn_raw:.6f}"
+        )
+
+        if ard_length_scales is not None:
+            print(
+                f"ARD-scaled distance GP to NN: "
+                f"{d_nn:.6f}"
+            )
+
+        print(
+            f"GP / NN agreement: "
+            f"{agreement_label(d_nn)}"
+        )
 
         if has("nn_gp_ensemble_mean"):
             print(f"GP mean at NN candidate: {get('nn_gp_ensemble_mean'):.6f}")
@@ -557,10 +856,38 @@ def print_automatic_optimisation_report(
 
     if has("svm_candidate"):
         svm_candidate = np.asarray(get("svm_candidate"), dtype=float)
-        d_svm = np.linalg.norm(best_input - svm_candidate)
+        #d_svm = np.linalg.norm(best_input - svm_candidate)
+        #print(f"SVM candidate: {arr(svm_candidate)}")
+        #print(f"Distance GP to SVM: {d_svm:.6f}")
+        #print(f"GP / SVM agreement: {agreement_label(d_svm)}")
+        d_svm_raw = float(
+            np.linalg.norm(
+                best_input - svm_candidate
+            )
+        )
+
+        d_svm = scaled_distance(
+            best_input,
+            svm_candidate,
+            ard_length_scales
+        )
+
         print(f"SVM candidate: {arr(svm_candidate)}")
-        print(f"Distance GP to SVM: {d_svm:.6f}")
-        print(f"GP / SVM agreement: {agreement_label(d_svm)}")
+        print(
+            f"Raw distance GP to SVM: "
+            f"{d_svm_raw:.6f}"
+        )
+
+        if ard_length_scales is not None:
+            print(
+                f"ARD-scaled distance GP to SVM: "
+                f"{d_svm:.6f}"
+            )
+
+        print(
+            f"GP / SVM agreement: "
+            f"{agreement_label(d_svm)}"
+        )
 
         if has("svm_gp_mean"):
             print(f"GP mean at SVM candidate: {get('svm_gp_mean'):.6f}")
@@ -583,13 +910,24 @@ def print_automatic_optimisation_report(
         points = [point for _, point in agreement_candidates]
         width = max(10, max(len(name) for name in names) + 2)
 
-        print("\nCandidate agreement distance matrix")
+        #print("\nCandidate agreement distance matrix")
+        if ard_length_scales is not None:
+            print(
+                "\nCandidate agreement distance matrix "
+                "(ARD-scaled)"
+            )
+        else:
+            print(
+                "\nCandidate agreement distance matrix"
+            )
+
         print("".ljust(width) + "".join(name.rjust(12) for name in names))
         pairwise_distances = []
         for i, name_i in enumerate(names):
             row = name_i.ljust(width)
             for j in range(len(names)):
-                distance = float(np.linalg.norm(points[i] - points[j]))
+                #distance = float(np.linalg.norm(points[i] - points[j]))
+                distance = scaled_distance(points[i], points[j], ard_length_scales)
                 row += f"{distance:12.6f}"
                 if i < j:
                     pairwise_distances.append(distance)
@@ -646,47 +984,100 @@ def print_automatic_optimisation_report(
     else:
         print("Probability of Improvement is still non-negligible.")
 
-    if distance_to_best_observed < 0.02:
+    #if distance_to_best_observed < 0.02:
+    if search_distance < 0.02:
         print(
             "The suggested query lies extremely close to the current best observation, "
             "indicating strong local refinement."
+        )
+
+    nearest_distance_for_interpretation = (
+        ard_nearest_sample_distance
+        if ard_length_scales is not None
+        else nearest_sample_distance
         )
 
     print("==================================================")
     print("\n9. DECISION TYPE")
     print("==================================================")
 
-    decision_type = classify_search_behaviour(distance_to_best_observed)
+    #decision_type = classify_search_behaviour(distance_to_best_observed)
+    decision_type = classify_search_behaviour(search_distance)
     print(f"Strategy: {decision_type}")
 
+    #if decision_type == "Strong local refinement":
+    #    print(
+    #        "Reason: The selected point is almost coincident with the current best "
+    #        "observation, so this recommendation is a fine local refinement step."
+    #    )
+    #elif decision_type == "Local exploitation":
+    #    print(
+    #        "Reason: The selected point remains close to the best observation, so the "
+    #        "optimiser is exploiting the current promising basin."
+    #    )
+    #elif decision_type == "Regional exploration / exploitation":
+    #    print(
+    #        "Reason: The selected point is in the same broad region as the current best "
+    #        "sample but far enough away to test the local shape of the response surface."
+    #    )
+    #else:
+    #    print(
+    #        "Reason: The selected point is far from the current best observation. "
+    #        "If the GP and acquisition functions agree, this should be interpreted as "
+    #        "a deliberate exploration of a second promising basin rather than a failure."
+    #    )
+
     if decision_type == "Strong local refinement":
-        print(
-            "Reason: The selected point is almost coincident with the current best "
-            "observation, so this recommendation is a fine local refinement step."
-        )
+        if ard_length_scales is not None:
+            print(
+                "Reason: Although some raw coordinates may differ, the "
+                "candidate is almost coincident with the current best "
+                "observation in the GP's learned ARD geometry. This is "
+                "a fine model-relative local refinement."
+            )
+        else:
+            print(
+                "Reason: The selected point is almost coincident with "
+                "the current best observation, so this recommendation "
+                "is a fine local refinement step."
+            )
+
     elif decision_type == "Local exploitation":
-        print(
-            "Reason: The selected point remains close to the best observation, so the "
-            "optimiser is exploiting the current promising basin."
-        )
+        if ard_length_scales is not None:
+            print(
+                "Reason: The candidate remains close to the best "
+                "observation after accounting for dimension-specific "
+                "GP length scales, so the optimiser is exploiting the "
+                "current promising basin."
+            )
+        else:
+            print(
+                "Reason: The selected point remains close to the best "
+                "observation, so the optimiser is exploiting the "
+                "current promising basin."
+            )
+
     elif decision_type == "Regional exploration / exploitation":
         print(
-            "Reason: The selected point is in the same broad region as the current best "
-            "sample but far enough away to test the local shape of the response surface."
-        )
-    else:
-        print(
-            "Reason: The selected point is far from the current best observation. "
-            "If the GP and acquisition functions agree, this should be interpreted as "
-            "a deliberate exploration of a second promising basin rather than a failure."
+            "Reason: The candidate remains in the same broad GP-supported "
+            "region but is displaced enough to test the response surface "
+            "and add useful information."
         )
 
-    if nearest_sample_distance < 0.02:
+    else:
+        print(
+            "Reason: The selected point is far from the current best "
+            "observation even after accounting for the GP's learned "
+            "length scales. This is genuine global exploration."
+        )
+
+
+    if nearest_distance_for_interpretation  < 0.02:
         print(
             "Nearest-sample note: the candidate is also very close to an existing sample, "
             "so this is a dense local refinement."
         )
-    elif nearest_sample_distance < 0.10:
+    elif nearest_distance_for_interpretation  < 0.10:
         print(
             "Nearest-sample note: the candidate is near previously sampled data, "
             "so it is refining a known region rather than jumping into completely new space."
@@ -714,21 +1105,109 @@ def print_automatic_optimisation_report(
         else:
             print("The hybrid GP and Thompson candidates differ noticeably.")
 
+    #if d_nn is not None:
+    #    if d_nn < 0.15:
+    #        print("The GP ensemble and NN surrogate broadly agree on the same promising region.")
+    #    elif d_nn < 0.30:
+    #        print("The NN surrogate gives partial support, but is displaced from the final GP candidate.")
+    #    else:
+    #        print("The GP ensemble and NN surrogate disagree, so the neural surrogate is not supporting this query.")
     if d_nn is not None:
-        if d_nn < 0.15:
-            print("The GP ensemble and NN surrogate broadly agree on the same promising region.")
+        nn_gp_mean = get(
+            "nn_gp_ensemble_mean",
+            None
+        )
+
+        nn_gp_ei = None
+
+        if nn_candidate_idx is not None:
+            nn_gp_ei = float(
+                ei_final[int(nn_candidate_idx)]
+            )
+
+        selected_gp_mean = float(
+            ensemble_mean[best_idx]
+        )
+
+        if (
+            nn_gp_mean is not None
+            and float(nn_gp_mean) < 0.95 * selected_gp_mean
+        ):
+            print(
+                "The NN proposes a point in a broadly related GP-scaled "
+                "region, but the GP assigns it a materially lower predicted "
+                "mean than the selected candidate."
+            )
+
+            if nn_gp_ei is not None:
+                print(
+                    f"GP EI at NN candidate: "
+                    f"{nn_gp_ei:.6g}"
+                )
+
+            print(
+                "The NN disagreement therefore lowers confidence slightly "
+                "but should not override the GP/Thompson recommendation."
+            )
+
+        elif d_nn < 0.15:
+            print(
+                "The GP ensemble and NN surrogate broadly agree on "
+                "the same promising region."
+            )
+
         elif d_nn < 0.30:
-            print("The NN surrogate gives partial support, but is displaced from the final GP candidate.")
+            print(
+                "The NN surrogate gives partial support, but is "
+                "displaced from the final GP candidate."
+            )
+
         else:
-            print("The GP ensemble and NN surrogate disagree, so the neural surrogate is not supporting this query.")
+            print(
+                "The GP ensemble and NN surrogate disagree, so the "
+                "neural surrogate is not directly supporting this query."
+            )
+
+    #if d_svm is not None:
+    #    if d_svm < 0.15:
+    #        print("The SVM candidate supports the same promising region as the GP hybrid candidate.")
+    #    elif d_svm < 0.30:
+    #        print("The SVM candidate gives partial support, but is displaced from the final GP candidate.")
+    #    else:
+    #        print("The SVM candidate differs noticeably from the GP hybrid candidate, so the SVM is not giving strong spatial support.")
 
     if d_svm is not None:
-        if d_svm < 0.15:
-            print("The SVM candidate supports the same promising region as the GP hybrid candidate.")
-        elif d_svm < 0.30:
-            print("The SVM candidate gives partial support, but is displaced from the final GP candidate.")
+        if gp_svm_margin is not None and float(gp_svm_margin) >= 0:
+            print(
+                "The selected GP candidate passes the SVM quality "
+                "gate. Spatial disagreement with the standalone SVM "
+                "candidate does not invalidate it because the SVM is "
+                "used primarily as a filter rather than as the final "
+                "regression surrogate."
+            )
+
+            if d_svm < 0.15:
+                print(
+                    "The standalone SVM candidate also lies in the "
+                    "same GP-scaled region."
+                )
+            elif d_svm < 0.30:
+                print(
+                    "The standalone SVM optimum is somewhat displaced, "
+                    "but still provides partial regional support."
+                )
+            else:
+                print(
+                    "The standalone SVM optimum is spatially different, "
+                    "but the GP candidate remains within the accepted "
+                    "SVM region."
+                )
         else:
-            print("The SVM candidate differs noticeably from the GP hybrid candidate, so the SVM is not giving strong spatial support.")
+            print(
+                "The selected candidate does not have clear positive "
+                "SVM support, so inspect the filtering stage before "
+                "submitting it."
+            )
 
     print("==================================================")
     print("\n11. OPTIMISER CONFIDENCE")
@@ -750,29 +1229,47 @@ def print_automatic_optimisation_report(
         confidence_score += 1.0
         confidence_reasons.append(f"posterior uncertainty is {uncertainty_label(selected_std).lower()} at the selected point")
 
-    if acquisition_spread is not None:
-        if acquisition_spread < 0.15:
-            confidence_score += 1.0
-            confidence_reasons.append("GP acquisition functions broadly agree")
-        elif acquisition_spread < 0.30:
-            confidence_score += 0.5
-            confidence_reasons.append("GP acquisition functions show moderate agreement")
+    #if acquisition_spread is not None:
+    #    if acquisition_spread < 0.15:
+    #        confidence_score += 1.0
+    #        confidence_reasons.append("GP acquisition functions broadly agree")
+    #    elif acquisition_spread < 0.30:
+    #        confidence_score += 0.5
+    #        confidence_reasons.append("GP acquisition functions show moderate agreement")
 
-    if d_thompson is not None:
-        if d_thompson < 0.15:
-            confidence_score += 1.0
-            confidence_reasons.append("Thompson sampling supports the GP candidate")
-        elif d_thompson < 0.30:
-            confidence_score += 0.5
-            confidence_reasons.append("Thompson sampling gives partial support")
+    agreement_spread_for_confidence = (
+    core_gp_spread
+    if core_gp_spread is not None
+    else acquisition_spread
+    )
 
-    if d_nn is not None:
-        if d_nn < 0.15:
+    if agreement_spread_for_confidence is not None:
+        if agreement_spread_for_confidence < 0.15:
             confidence_score += 1.0
-            confidence_reasons.append("neural surrogate supports the GP candidate")
-        elif d_nn < 0.30:
+            confidence_reasons.append(
+                "core GP acquisition functions broadly agree"
+            )
+        elif agreement_spread_for_confidence < 0.30:
             confidence_score += 0.5
-            confidence_reasons.append("neural surrogate gives partial support")
+            confidence_reasons.append(
+                "core GP acquisition functions show moderate agreement"
+            )
+
+        if d_thompson is not None:
+            if d_thompson < 0.15:
+                confidence_score += 1.0
+                confidence_reasons.append("Thompson sampling supports the GP candidate")
+            elif d_thompson < 0.30:
+                confidence_score += 0.5
+                confidence_reasons.append("Thompson sampling gives partial support")
+
+    #if d_nn is not None:
+    #    if d_nn < 0.15:
+    #        confidence_score += 1.0
+    #        confidence_reasons.append("neural surrogate supports the GP candidate")
+    #    elif d_nn < 0.30:
+    #        confidence_score += 0.5
+    #        confidence_reasons.append("neural surrogate gives partial support")
 
     if d_svm is not None:
         if d_svm < 0.15:
