@@ -286,6 +286,59 @@ This week focused on validating the optimisation results by re-evaluating the be
 * Updated the optimisation strategy to remove exact duplicate observations from deterministic datasets while retaining repeated measurements with differing outputs for noisy functions.
 * Increased confidence in the surrogate models by experimentally validating the assumptions underlying the Bayesian optimisation process.
 
+## Week 9
+
+This week focused on moving the optimisation framework from a working Bayesian optimiser into a more robust and defensible optimisation system. Rather than introducing new optimisation algorithms, the emphasis was on validating the current approach, improving model stability and developing a more informed strategy for selecting the final evaluation point.
+
+Work completed
+Gaussian Process stability improvements
+* Investigated and resolved several Gaussian Process fitting issues, including convergence warnings.
+* Improved kernel behaviour and model robustness so that the GP fits more reliably as additional observations are collected.
+* Continued monitoring posterior behaviour through prediction surfaces and optimisation reports.
+Analysis of Function 1
+* Analysed the Week 9 optimisation report.
+* Determined that the GP is converging towards a single optimum with decreasing uncertainty.
+* Concluded that exploration should now be reduced and future evaluations should largely follow the GP recommendation.
+Analysis of Function 2
+* Performed a detailed analysis of the optimisation landscape.
+* Examined optimisation reports, posterior plots and candidate rankings.
+* Investigated whether a second unexplored basin exists.
+* Concluded that although there is some evidence of another possible region, the current data strongly supports continuing to exploit the known optimum until later in the remaining evaluation budget.
+* Established a strategy of delaying any large exploratory move until only a few evaluations remain.
+Candidate selection strategy
+
+Rather than selecting the next point purely from the acquisition function, we refined the decision process by comparing multiple candidate generation methods, including:
+
+* Gaussian Process optimum
+* Thompson Sampling
+* Neural Network proposal
+* SVM-filtered candidate
+
+These comparisons helped determine when alternative methods provide genuinely new information versus simply duplicating the GP recommendation.
+
+Optimisation report interpretation
+
+Considerable effort was spent understanding what the optimisation reports reveal, including:
+
+* exploration vs exploitation weights
+* expected improvement behaviour
+* uncertainty estimates
+* SVM candidate filtering
+* posterior confidence
+* evidence for multiple optima
+
+This has made the optimisation process much easier to interpret rather than simply accepting the highest acquisition value.
+
+Key improvements
+* Improved Gaussian Process stability and convergence.
+* Better understanding of when exploration is still worthwhile.
+* Developed a more structured decision process for choosing the next evaluation point.
+* Increased confidence that Function 1 is approaching convergence.
+* Identified a practical strategy for handling the possible second basin in Function 2.
+* Improved interpretation of optimisation reports, making decisions more evidence-driven rather than relying solely on acquisition function values.
+* Continued documenting the optimisation process with reflections that connect theoretical machine learning concepts to practical Bayesian optimisation decisions.
+
+Overall, this week represented a shift from developing the optimisation framework to critically evaluating its behaviour and using that understanding to make more informed decisions about the remaining evaluation budget.
 ---
 
 ## 7. Current Strategy
