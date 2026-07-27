@@ -329,7 +329,8 @@ Considerable effort was spent understanding what the optimisation reports reveal
 
 This has made the optimisation process much easier to interpret rather than simply accepting the highest acquisition value.
 
-Key improvements
+## Key improvements
+
 * Improved Gaussian Process stability and convergence.
 * Better understanding of when exploration is still worthwhile.
 * Developed a more structured decision process for choosing the next evaluation point.
@@ -339,6 +340,7 @@ Key improvements
 * Continued documenting the optimisation process with reflections that connect theoretical machine learning concepts to practical Bayesian optimisation decisions.
 
 Overall, this week represented a shift from developing the optimisation framework to critically evaluating its behaviour and using that understanding to make more informed decisions about the remaining evaluation budget.
+
 ---
 
 ## 7. Current Strategy
