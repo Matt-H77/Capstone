@@ -123,6 +123,9 @@ Before submission, diagnostic tools are used to assess model behaviour and candi
 
 ## 5. Project Architecture
 
+<img width="1024" height="1536" alt="image" src="https://github.com/user-attachments/assets/0fe23e79-e0f7-40e1-8a00-8d24e2016587" />
+
+
 ```text
 ┌─────────────────────────┐
 │ Initial Dataset         │
