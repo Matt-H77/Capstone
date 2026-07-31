@@ -46,78 +46,105 @@ Key constraints include:
 ---
 
 ## 4. Technical Approach
+**Data Management**
 
-### Data Management
+For each optimisation task, the current set of observations is loaded and updated with newly acquired query results. Objective values are transformed where necessary so that all optimisation tasks are formulated as maximisation problems. Duplicate observations are identified, and candidate points that are too close to existing samples are excluded during the optimisation process to encourage exploration of previously unexplored regions.
 
-For each optimisation task, the current set of observations is loaded and updated with newly acquired query results. Outputs are transformed where necessary so that all tasks are framed as maximisation problems.
+**Candidate Generation**
 
-### Candidate Generation
+A large pool of candidate points is generated using Latin Hypercube Sampling (LHS). The number of generated candidates scales with problem dimensionality (2D–8D), providing broad coverage of the search space while maintaining computational efficiency. This initial candidate pool forms the basis for subsequent filtering and optimisation.
 
-A large pool of candidate points is generated using Latin Hypercube Sampling (LHS). The number of candidates scales with problem dimensionality (2D–8D).
+**SVM-Guided Candidate Filtering**
 
-### SVM-Guided Candidate Filtering
+A Radial Basis Function (RBF) Support Vector Machine (SVM) is trained using the observed data to distinguish between high-yield and low-yield regions of the search space.
 
-An RBF Support Vector Machine is used to classify observed samples into high-yield and low-yield regions.
+The trained classifier is used to guide candidate selection by:
 
-- Promising candidates are retained based on predicted probability of high yield.
-- Random candidates can be reintroduced to maintain exploration.
-- Computational effort is focused on the most promising regions.
+* retaining candidates with a high predicted probability of belonging to high-yield regions;
+* reintroducing a proportion of randomly selected candidates to preserve global exploration; and
+* concentrating computational effort on the most promising regions while maintaining sufficient diversity within the candidate pool.
 
-### Gaussian Process Surrogate Ensemble
+**Gaussian Process Surrogate Ensemble**
 
-Gaussian Process Regression is used as the primary surrogate modelling framework.
+Gaussian Process Regression (GPR) provides the primary surrogate modelling framework used throughout the optimisation process.
 
-Kernel families evaluated include:
+Multiple Gaussian Process models employing different kernel configurations are evaluated, including:
 
-- RBF
-- Matern
-- Rational Quadratic
+* Radial Basis Function (RBF)
+* Matérn
+* Rational Quadratic
 
-Multiple GP configurations are combined into an ensemble to improve robustness.
+The resulting Gaussian Process models are combined into an ensemble to improve predictive robustness and reduce dependence on any individual kernel configuration. Ensemble predictions provide both the estimated objective value and the associated predictive uncertainty for every candidate point.
 
-### Automatic Hyperparameter Optimisation
+**Automatic Hyperparameter Optimisation**
 
-GP hyperparameters are tuned automatically using Leave-One-Out Cross Validation (LOOCV).
+Gaussian Process hyperparameters are selected automatically using Leave-One-Out Cross Validation (LOOCV) as the model selection criterion.
 
-The search includes:
+The optimisation process considers:
 
-- Kernel selection
-- Observation noise (alpha)
-- Length-scale bounds
-- Matern smoothness parameter (ν)
-- Rational Quadratic alpha
+* kernel selection;
+* observation noise (α);
+* kernel length-scale bounds;
+* Matérn smoothness parameter (ν); and
+* Rational Quadratic α parameter.
 
-### Acquisition Functions
+The best-performing configurations are incorporated into the final Gaussian Process ensemble.
 
-Candidate points are evaluated using:
+**Acquisition Functions**
 
-- Expected Improvement (EI)
-- Upper Confidence Bound (UCB)
-- Probability of Improvement (PI)
+Candidate points are evaluated using three standard Bayesian optimisation acquisition functions:
 
-### Adaptive Exploration vs Exploitation
+* Expected Improvement (EI)
+* Upper Confidence Bound (UCB)
+* Probability of Improvement (PI)
 
-Normalised acquisition scores are combined into a hybrid acquisition function that gradually shifts from exploration to exploitation as more data becomes available.
+Each acquisition function captures different exploration and exploitation characteristics, allowing the optimisation process to balance searching promising regions against investigating uncertain areas of the search space.
 
-### Thompson Sampling Comparison
+**Adaptive Exploration–Exploitation Strategy**
 
-Posterior samples are drawn from the GP ensemble to generate an independent candidate recommendation.
+The acquisition function outputs are normalised and combined into a single hybrid acquisition score. Adaptive weighting gradually shifts the optimisation strategy from exploration towards exploitation as additional observations become available.
 
-### Neural Network Surrogate
+This dynamic weighting enables broader exploration during the early stages of optimisation while increasingly focusing on high-performing regions as confidence in the surrogate model improves.
 
-A neural-network ensemble is trained as an alternative surrogate model. Gradient ascent is performed on the learned response surface to generate candidate recommendations.
+**Thompson Sampling Comparison**
 
-### Diagnostic Analysis
+Posterior samples are drawn from the Gaussian Process ensemble to generate an independent candidate recommendation using Thompson Sampling. This provides an alternative Bayesian optimisation strategy that samples directly from the surrogate posterior and serves as an independent comparison with the primary hybrid acquisition approach.
 
-Before submission, diagnostic tools are used to assess model behaviour and candidate quality:
+**Neural Network Surrogate**
 
-- GP posterior slice visualisations
-- Training fit diagnostics
-- Acquisition score distributions
-- Mean versus uncertainty analysis
-- Thompson sampling comparisons
-- Neural-network candidate comparisons
-- SVM decision-boundary visualisations
+A neural-network ensemble is trained as an alternative surrogate model using the observed data. The learned response surface is subsequently optimised to generate an additional candidate recommendation.
+
+Rather than replacing the primary Bayesian optimisation framework, the neural-network recommendation is used as an independent comparison to assess agreement between different surrogate modelling approaches and to provide additional confidence in the selected candidate.
+
+**Candidate Comparison and Recommendation**
+
+Candidate recommendations produced by the hybrid Gaussian Process acquisition function, Thompson Sampling, the neural-network surrogate and the highest-confidence SVM prediction are compared before each weekly submission.
+
+For each candidate, the following information is evaluated:
+
+* predicted objective value;
+* predictive uncertainty;
+* acquisition score;
+* SVM confidence;
+* distance from previously evaluated samples; and
+* candidate feasibility.
+
+The hybrid Gaussian Process acquisition function provides the primary automatic recommendation, while the remaining methods offer independent comparisons that support the final submission decision.
+
+**Diagnostic Analysis**
+
+A comprehensive suite of diagnostic tools is used throughout the optimisation process to evaluate model behaviour and candidate quality. These diagnostics include:
+
+* Gaussian Process posterior slice visualisations;
+* training fit diagnostics;
+* acquisition function score distributions;
+* predicted mean versus uncertainty analysis;
+* Thompson Sampling comparisons;
+* neural-network candidate comparisons;
+* SVM confidence and decision-boundary visualisations; and
+* candidate comparison tables summarising recommendations from all optimisation methods.
+
+These diagnostics provide insight into surrogate model performance, exploration behaviour and candidate selection, helping to ensure that each submitted query is supported by multiple complementary analyses
 
 ---
 
