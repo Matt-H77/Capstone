@@ -123,8 +123,7 @@ Before submission, diagnostic tools are used to assess model behaviour and candi
 
 ## 5. Project Architecture
 
-<img width="1024" height="1536" alt="notebook diagram" src="https://github.com/user-attachments/assets/bda56230-02e9-46e8-910b-7098ab65c06f" />
-
+<img width="1024" height="1536" alt="notebook architecture" src="https://github.com/user-attachments/assets/01ae3b26-6b18-4b6d-9627-56652c6d008b" />
 
 ---
 
