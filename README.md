@@ -346,17 +346,17 @@ Overall, this week represented a shift from developing the optimisation framewor
 This week focused on improving the robustness and reliability of the Bayesian Optimisation pipeline by investigating why the Gaussian Process (GP) repeatedly selected the same candidate point. Analysis showed that while duplicate observations were removed from the training dataset, previously evaluated inputs could still remain in the optimisation candidate pool, allowing the acquisition function to repeatedly recommend the same location.
 
 ## Key Improvements
-Added candidate filtering to remove previously evaluated (or near-evaluated) inputs before GP prediction and acquisition optimisation.
-Implemented an efficient KD-Tree nearest-neighbour search to identify and exclude candidates within a configurable minimum distance of existing observations.
-Improved duplicate handling by distinguishing between:
-duplicate observations in the training data (removed to avoid redundant GP updates), and
-duplicate candidate locations (removed to prevent repeated evaluations).
-Added diagnostic reporting showing:
-the number of candidates removed,
-the number of remaining candidates, and
-the minimum distance between retained candidates and previous observations.
-Reviewed the candidate generation process and identified that using a fixed Latin Hypercube seed produced the same candidate set each iteration. This was documented, with support added for using iteration-specific seeds while maintaining reproducibility if required.
-Added validation checks to ensure the final GP-selected candidate satisfies the minimum-distance constraint before submission.
+* Added candidate filtering to remove previously evaluated (or near-evaluated) inputs before GP prediction and acquisition optimisation.
+* Implemented an efficient KD-Tree nearest-neighbour search to identify and exclude candidates within a configurable minimum distance of existing observations.
+* Improved duplicate handling by distinguishing between:
+  * duplicate observations in the training data (removed to avoid redundant GP updates), and
+  * duplicate candidate locations (removed to prevent repeated evaluations).
+* Added diagnostic reporting showing:
+  * the number of candidates removed,
+  * the number of remaining candidates, and
+  * the minimum distance between retained candidates and previous observations.
+* Reviewed the candidate generation process and identified that using a fixed Latin Hypercube seed produced the same candidate set each iteration. This was documented, with support added for using iteration-specific seeds while maintaining reproducibility if required.
+* Added validation checks to ensure the final GP-selected candidate satisfies the minimum-distance constraint before submission.
 
 ---
 
