@@ -1,0 +1,235 @@
+==================================================
+OPTIMISATION REPORT
+==================================================
+==================================================
+1. DATASET SUMMARY
+==================================================
+Function / dataset: 6
+Week dataset: 8
+Samples used: 28
+Input dimensions: 5
+Samples per dimension: 5.6000
+Observed y min: 0.333605
+Observed y max: 3.216880
+Observed y mean: 1.787836
+Best observed input: [0.054739 0.992664 0.007224 0.06546  0.93453 ]
+Best observed output: 3.216880
+==================================================
+
+2. SEARCH STRATEGY
+==================================================
+Progress through budget: 0.6154
+Exploration weight / UCB: 0.5615
+Exploitation weight / EI: 0.4385
+EI / PI xi: 0.00446154
+Generated candidates before filtering: 559016
+Candidates used after filtering: 19817
+SVM filtering enabled: True
+==================================================
+
+3. SVM CANDIDATE COMPARISON
+==================================================
+SVM filtering enabled: True
+Candidates before SVM filtering: 559016
+Candidates after SVM filtering: 19817
+Candidates rejected by SVM: 539199
+SVM retention rate: 3.54%
+
+Candidate SVM support
+Candidate         Accepted  SVM Score   SVM Margin   SVM Rank
+--------------------------------------------------------------
+GP Hybrid        Yes       0.803738     0.803738    10410
+Thompson         Yes       0.809623     0.809623    10371
+Neural Network   Yes       0.861075     0.861075     9589
+
+Candidate acquisition comparison
+Candidate         GP Mean    GP Std        EI       UCB        PI  Final Score
+----------------------------------------------------------------------------
+GP Hybrid        3.045814  0.212986  0.024532  3.471786  0.204933     0.940563
+Thompson         2.997183  0.177156  0.008679  3.351495  0.102878     0.630292
+Neural Network   3.283292  0.117509  0.008284  3.316631  0.170218     0.668483
+
+Candidate ranking within filtered candidate set
+Ranking denominator: 19817
+Candidate         Mean Rank  Std Rank   EI Rank  UCB Rank   PI Rank  SVM Rank
+---------------------------------------------------------------------------
+GP Hybrid               13     13800         2         7         1     10410
+Thompson                24     17898        23        27         9     10371
+Neural Network           2     19811        26        55         3      9589
+
+SVM interpretation
+The selected GP candidate lies inside the SVM-accepted region.
+Difference in SVM score, GP minus Thompson: -0.005884
+Difference in SVM score, GP minus NN: -0.057337
+The SVM filter acts as a feasibility or quality gate before the GP/EI/UCB/PI scoring chooses among the surviving candidates.
+==================================================
+
+4. GP TRAINING QUALITY
+==================================================
+
+RationalQuadratic
+  Training MAE: 0.000290
+  Training RMSE: 0.001068
+  Relative RMSE: 0.000370
+  Max training std: 0.000848
+  Learned kernel: 2.23**2 * RationalQuadratic(alpha=0.1, length_scale=1.85)
+
+Matern
+  Training MAE: 0.000287
+  Training RMSE: 0.001068
+  Relative RMSE: 0.000370
+  Max training std: 0.000848
+  Learned kernel: 1.49**2 * Matern(length_scale=7.41, nu=0.5)
+
+RBF
+  Training MAE: 0.000290
+  Training RMSE: 0.001068
+  Relative RMSE: 0.000370
+  Max training std: 0.000848
+  Learned kernel: 0.794**2 * RBF(length_scale=0.601)
+==================================================
+
+5. INDIVIDUAL GP ACQUISITION SUGGESTIONS
+==================================================
+
+RationalQuadratic + UCB
+  Input: [0.993058 0.201484 0.140062 0.067881 0.995332]
+  Predicted mean: 2.884258
+  Predicted std: 0.401671
+  Acquisition score: 3.6876
+
+RationalQuadratic + EI
+  Input: [0.993058 0.201484 0.140062 0.067881 0.995332]
+  Predicted mean: 2.884258
+  Predicted std: 0.401671
+  Acquisition score: 0.0450361
+
+RationalQuadratic + PI
+  Input: [0.993058 0.201484 0.140062 0.067881 0.995332]
+  Predicted mean: 2.884258
+  Predicted std: 0.401671
+  Acquisition score: 0.200677
+
+Matern + UCB
+  Input: [0.738429 0.992758 0.153526 0.003557 0.967841]
+  Predicted mean: 2.981327
+  Predicted std: 0.295245
+  Acquisition score: 3.57182
+
+Matern + EI
+  Input: [0.471649 0.97492  0.003936 0.098319 0.997825]
+  Predicted mean: 2.998753
+  Predicted std: 0.283849
+  Acquisition score: 0.0350822
+
+Matern + PI
+  Input: [0.054735 0.97033  0.069075 0.003733 0.934494]
+  Predicted mean: 3.139030
+  Predicted std: 0.145753
+  Acquisition score: 0.286126
+
+RBF + UCB
+  Input: [0.995881 0.17471  0.09187  0.371596 0.992234]
+  Predicted mean: 2.697277
+  Predicted std: 0.465582
+  Acquisition score: 3.62844
+
+RBF + EI
+  Input: [0.995881 0.17471  0.09187  0.371596 0.992234]
+  Predicted mean: 2.697277
+  Predicted std: 0.465582
+  Acquisition score: 0.0303631
+
+RBF + PI
+  Input: [0.988615 0.865963 0.03464  0.327281 0.984356]
+  Predicted mean: 3.116717
+  Predicted std: 0.160012
+  Acquisition score: 0.256603
+==================================================
+
+6. FINAL HYBRID DECISION
+==================================================
+Best next input: [0.988615 0.865963 0.03464  0.327281 0.984356]
+Ensemble predicted mean: 3.045814
+Ensemble predicted std: 0.212986
+Estimated EI: 0.0245315
+Estimated UCB: 3.471786
+Estimated PI: 0.204933
+Final acquisition score: 0.940563
+Note: The final acquisition score is a normalized relative score within the candidate set, not an absolute probability of success.
+==================================================
+
+7. CROSS-MODEL AGREEMENT
+==================================================
+GP / hybrid candidate: [0.988615 0.865963 0.03464  0.327281 0.984356]
+Distance to best observed input: 0.979776
+Distance to nearest observed sample: 0.207563
+Search behaviour: Global exploration
+Mean pairwise distance between acquisition suggestions: 0.675108
+Acquisition-function agreement: Low
+Thompson candidate: [0.941301 0.720201 0.061908 0.20554  0.96328 ]
+Distance GP to Thompson: 0.198730
+GP / Thompson agreement: Moderate
+NN candidate: [0. 1. 0. 0. 1.]
+Distance GP to NN: 1.050658
+GP / NN agreement: Low
+GP mean at NN candidate: 3.283292
+GP std at NN candidate: 0.117509
+SVM candidate: [0.739449 0.850722 0.605489 0.087868 0.904605]
+Distance GP to SVM: 0.672208
+GP / SVM agreement: Low
+GP mean at SVM candidate: 2.209264
+GP std at SVM candidate: 0.251977
+EI at SVM candidate: 1.67295e-06
+
+Candidate agreement distance matrix
+                    GP    Thompson          NN         SVM
+GP            0.000000    0.198730    1.050658    0.672208
+Thompson      0.198730    0.000000    1.005864    0.608729
+NN            1.050658    1.005864    0.000000    0.975964
+SVM           0.672208    0.608729    0.975964    0.000000
+Mean cross-model distance: 0.752026
+Max cross-model distance: 1.050658
+Overall candidate consensus: Low
+Consensus summary: the available candidate generators disagree, so treat the final query as less strongly supported.
+==================================================
+
+8. CONVERGENCE DIAGNOSTICS
+==================================================
+Posterior uncertainty at selected point: 0.212986
+Uncertainty level: Moderate
+Expected Improvement is still active, suggesting the model sees some possibility of improvement.
+Probability of Improvement is still non-negligible.
+==================================================
+
+9. DECISION TYPE
+==================================================
+Strategy: Global exploration
+Reason: The selected point is far from the current best observation. If the GP and acquisition functions agree, this should be interpreted as a deliberate exploration of a second promising basin rather than a failure.
+Nearest-sample note: the candidate is not close to existing samples, so the query will add information in a relatively unexplored part of the domain.
+==================================================
+
+10. INTERPRETATION
+==================================================
+The selected candidate has low-to-moderate uncertainty.
+The Thompson candidate gives partial support, but is displaced from the final GP candidate.
+The GP ensemble and NN surrogate disagree, so the neural surrogate is not supporting this query.
+The SVM candidate differs noticeably from the GP hybrid candidate, so the SVM is not giving strong spatial support.
+==================================================
+
+11. OPTIMISER CONFIDENCE
+==================================================
+Overall optimiser confidence: MODERATE
+Confidence score: 2.5 / 6.0
+Reasons:
+  - GP training error is small relative to the observed output range
+  - posterior uncertainty is moderate at the selected point
+  - Thompson sampling gives partial support
+==================================================
+
+12. FINAL RECOMMENDATION
+==================================================
+Submit next query: [0.988615 0.865963 0.03464  0.327281 0.984356]
+
+===============================================================
+
