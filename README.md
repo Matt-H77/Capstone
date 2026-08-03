@@ -6,6 +6,8 @@ This capstone project is a Black-Box Optimisation (BBO) challenge based on Bayes
 
 Each function represents a realistic optimisation problem where evaluations are expensive and only a small number of samples can be collected. The project mirrors many real-world machine learning and engineering problems where exhaustive search is impractical.
 
+- 📊 **Dataset Datasheet** – [`data_card.md`](data_card.md)
+- 🤖 **Model Card** – [`model_card.md`](model_card.md)
 ---
 
 ## 2. Inputs and Outputs
