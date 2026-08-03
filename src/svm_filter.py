@@ -600,7 +600,7 @@ def plot_svm_decision_boundary_matrix(
 
     legend_handles = [
         Line2D([0], [0], marker="x", linestyle="None", markersize=7, label="Low yield"),
-        Line2D([0], [0], marker="*", linestyle="None", markersize=9, label="High yield"),
+        Line2D([0], [0], marker="*", linestyle="None", markerfacecolor="orange", markeredgecolor="orange", markersize=9, label="High yield"),
         Line2D(
             [0], [0],
             marker="o",

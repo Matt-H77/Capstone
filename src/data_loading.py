@@ -195,7 +195,63 @@ def append_input_and_output_data(
             prevent_duplicates
         )
 
+    # Append new data from week 11
     if week_dataset >= 11:
+        new_inputs_file = "data/new_data/inputs_week11.txt"
+        new_outputs_file = "data/new_data/outputs_week11.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 12
+    if week_dataset >= 12:
+        new_inputs_file = "data/new_data/inputs_week12.txt"
+        new_outputs_file = "data/new_data/outputs_week12.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 13
+    if week_dataset >= 13:
+        new_inputs_file = "data/new_data/inputs_week13.txt"
+        new_outputs_file = "data/new_data/outputs_week13.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    # Append new data from week 14
+    if week_dataset >= 14:
+        new_inputs_file = "data/new_data/inputs_week14.txt"
+        new_outputs_file = "data/new_data/outputs_week14.txt"
+
+        existing_inputs, existing_outputs = append_input_and_output(
+            existing_inputs,
+            existing_outputs,
+            new_inputs_file,
+            new_outputs_file,
+            position,
+            prevent_duplicates
+        )
+
+    if week_dataset >= 15:
         print("No additional data available for week 11 and beyond.")   
 
     return (existing_inputs, existing_outputs)
