@@ -152,7 +152,8 @@ These diagnostics provide insight into surrogate model performance, exploration 
 
 ## 5. Project Architecture
 
-<img width="1024" height="1536" alt="notebook architecture" src="https://github.com/user-attachments/assets/01ae3b26-6b18-4b6d-9627-56652c6d008b" />
+<img width="1024" height="1536" alt="WEEKLY BAYESIAN OPTIMISATION PIPELINE" src="https://github.com/user-attachments/assets/e3496c7e-7798-4172-b77b-6fd8e0f50b05" />
+
 
 ---
 
