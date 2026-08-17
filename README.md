@@ -329,6 +329,27 @@ This week focused on improving the robustness and reliability of the Bayesian Op
 * Reviewed the candidate generation process and identified that using a fixed Latin Hypercube seed produced the same candidate set each iteration. This was documented, with support added for using iteration-specific seeds while maintaining reproducibility if required.
 * Added validation checks to ensure the final GP-selected candidate satisfies the minimum-distance constraint before submission.
 
+## Week 11 -- PCA Diagnostics and Search-Space Structure
+
+PCA was introduced to provide a new diagnostic view of the observed
+search space and model recommendations.
+
+## Key improvements:
+
+* Added PCA diagnostics without altering the optimisation model.
+* Automatically retained enough PCs to explain at least 90% of
+  observed input variance.
+* Added PCA loading and explained-variance reporting.
+* Projected observed samples and GP, Thompson, NN, and SVM candidates
+  into retained PCA space.
+* Added lower-triangle PCA projection matrices.
+* Added top-performing observation highlights.
+* Added extended diagnostics for candidate-to-high-performance-region
+  distance.
+* Added cross-model agreement measurements in retained PCA space.
+* Added analysis of high-performing-region compactness and PC/output
+  association.
+  
 ---
 
 ## 7. Current Strategy
