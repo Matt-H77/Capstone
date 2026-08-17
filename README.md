@@ -146,7 +146,44 @@ A comprehensive suite of diagnostic tools is used throughout the optimisation pr
 * SVM confidence and decision-boundary visualisations; and
 * candidate comparison tables summarising recommendations from all optimisation methods.
 
-These diagnostics provide insight into surrogate model performance, exploration behaviour and candidate selection, helping to ensure that each submitted query is supported by multiple complementary analyses
+**Principal Component Analysis (PCA) Diagnostics**
+
+PCA is used as an additional diagnostic tool to improve interpretation
+of the optimisation search space without changing the underlying
+optimisation models or automatic candidate selection.
+
+PCA is fitted to the observed input data and automatically retains the
+minimum number of principal components required to explain at least 90%
+of the observed input variance. Observations and candidate
+recommendations from the hybrid GP, Thompson Sampling, neural-network
+surrogate and SVM can then be projected into the same PCA space.
+
+The PCA diagnostics provide:
+
+* explained variance and cumulative explained variance;
+* principal-component loadings;
+* automatic selection of enough components to explain at least 90% of
+the variance;
+* visualisation of observations and model-selected candidates in
+lower-dimensional PCA space;
+* highlighting of the best observed point and high-performing
+observations;
+* comparison of candidate distances in PCA space and the original
+input space;
+* cross-model agreement analysis;
+* assessment of whether high-performing observations form compact
+regions or clusters; and
+* extended diagnostics examining relationships between retained
+principal components and observed objective values.
+
+PCA is used only for diagnostic interpretation. It does not alter the
+Gaussian Process, SVM, neural-network surrogate, Thompson Sampling,
+acquisition functions or final automatic recommendation.
+
+These diagnostics provide insight into surrogate model performance,
+exploration behaviour, search-space structure and candidate selection,
+helping to ensure that each submitted query is supported by multiple
+complementary analyses.
 
 ---
 
@@ -364,6 +401,15 @@ The final workflow combines:
 6. Hybrid acquisition scoring (EI + UCB + PI).
 7. Thompson Sampling validation.
 8. Neural-network surrogate comparison.
-9. Diagnostic analysis and candidate review.
+9. PCA and extended PCA diagnostic analysis.
+10. Diagnostic analysis and candidate review.
 
-This creates a robust Bayesian optimisation framework that balances exploration, exploitation, uncertainty quantification, and model diversity while operating under a limited evaluation budget.
+PCA is used as a supporting diagnostic rather than an optimisation or
+candidate-selection method. It helps interpret search-space structure,
+high-performing regions and agreement between the GP, Thompson Sampling,
+neural-network and SVM recommendations.
+
+This creates a robust Bayesian optimisation framework that balances
+exploration, exploitation, uncertainty quantification, model diversity
+and search-space interpretation while operating under a limited
+evaluation budget.
