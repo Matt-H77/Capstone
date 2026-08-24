@@ -1,0 +1,947 @@
+{
+    "run": {
+        "function": 3,
+        "week": 7,
+        "timestamp": "2026-08-21T13:57:58.577897",
+        "dimensions": 3,
+        "samples": 22
+    },
+    "objective": {
+        "direction": "minimise",
+        "output_transform": "negative_side_effects_maximisation_inversion"
+    },
+    "best_observed": {
+        "input": [
+            0.334285,
+            1.0,
+            1.0
+        ],
+        "raw_output": -0.47622948272340854,
+        "transformed_output": 0.47622948272340854,
+        "objective_direction": "minimise",
+        "output_transform": "negative_side_effects_maximisation_inversion"
+    },
+    "gp_hybrid_candidate": {
+        "input": [
+            0.016249385300016093,
+            0.8405764260343447,
+            0.9987320378202794
+        ],
+        "predicted_output": -0.47363353702959543,
+        "predicted_output_transformed": 0.47363353702959543,
+        "predicted_std": 0.048889004661356726,
+        "ei": 0.015873529993214848,
+        "ucb": 0.5714115463523088,
+        "pi": 0.4370242818946885,
+        "final_score": 0.9731380150740261
+    },
+    "thompson_candidate": {
+        "input": [
+            0.022647567561474517,
+            0.9414753668637849,
+            0.9918103768356222
+        ]
+    },
+    "neural_network_candidate": {
+        "input": [
+            0.33869558572769165,
+            1.0,
+            1.0
+        ],
+        "gp_predicted_mean": 0.451763910197301,
+        "gp_predicted_std": 0.029742836949817535
+    },
+    "svm_candidate": {
+        "enabled": true,
+        "input": [
+            0.17053178608250982,
+            0.7059590140216693,
+            0.9983261655287298
+        ],
+        "gp_predicted_mean": 0.4702275513744499,
+        "gp_predicted_std": 0.02598349658964969
+    },
+    "strategy": {
+        "progress": 0.5384615384615384,
+        "exploration_weight": 0.5038461538461538,
+        "exploitation_weight": 0.49615384615384617,
+        "xi": 0.005153846153846155
+    },
+    "candidate_pool": {
+        "before_svm": 259807,
+        "final": 18124
+    },
+    "gp_models": {
+        "Matern": {
+            "kernel": "1.01**2 * Matern(length_scale=0.651, nu=2.5)",
+            "log_marginal_likelihood": -12.8222450234522
+        },
+        "RationalQuadratic": {
+            "kernel": "1.02**2 * RationalQuadratic(alpha=2, length_scale=0.527)",
+            "log_marginal_likelihood": -12.629976401060064
+        },
+        "RBF": {
+            "kernel": "0.898**2 * RBF(length_scale=0.469)",
+            "log_marginal_likelihood": -12.210041904987612
+        }
+    },
+    "candidate_comparison": [
+        {
+            "Method": "Final GP Choice",
+            "Candidate Index": 556,
+            "Candidate Input": [
+                0.016,
+                0.841,
+                0.999
+            ],
+            "GP Mean": 0.4736,
+            "GP Std": 0.0489,
+            "EI": 0.0159,
+            "PI": 0.437,
+            "UCB": 0.5714,
+            "Distance to GP": 0.0,
+            "GP Mean Rank": 226,
+            "Uncertainty Rank": 5275,
+            "SVM Score": 0.7346,
+            "SVM Rank": 4919,
+            "GP Mean Loss": 0.0,
+            "Loss per Distance": 0.0,
+            "Uncertainty Gain vs GP": 0.0,
+            "Exploration per Loss": 0.0,
+            "Mean-Std Tradeoff": 0.5225,
+            "Candidate Role": "Exploitation baseline"
+        },
+        {
+            "Method": "SVM",
+            "Candidate Index": 6885,
+            "Candidate Input": [
+                0.171,
+                0.706,
+                0.998
+            ],
+            "GP Mean": 0.4702,
+            "GP Std": 0.026,
+            "EI": 0.0057,
+            "PI": 0.3338,
+            "UCB": 0.5222,
+            "Distance to GP": 0.2048,
+            "GP Mean Rank": 391,
+            "Uncertainty Rank": 17004,
+            "SVM Score": 0.8337,
+            "SVM Rank": 1,
+            "GP Mean Loss": 0.0034,
+            "Loss per Distance": 0.0166,
+            "Uncertainty Gain vs GP": -0.0229,
+            "Exploration per Loss": 0.0,
+            "Mean-Std Tradeoff": 0.4962,
+            "Candidate Role": "Alternative candidate"
+        },
+        {
+            "Method": "Thompson Sampling",
+            "Candidate Index": 791,
+            "Candidate Input": [
+                0.023,
+                0.941,
+                0.992
+            ],
+            "GP Mean": 0.4639,
+            "GP Std": 0.0528,
+            "EI": 0.0135,
+            "PI": 0.3701,
+            "UCB": 0.5694,
+            "Distance to GP": 0.1013,
+            "GP Mean Rank": 721,
+            "Uncertainty Rank": 3737,
+            "SVM Score": 0.6907,
+            "SVM Rank": 7992,
+            "GP Mean Loss": 0.0097,
+            "Loss per Distance": 0.0962,
+            "Uncertainty Gain vs GP": 0.0039,
+            "Exploration per Loss": 0.3993,
+            "Mean-Std Tradeoff": 0.5167,
+            "Candidate Role": "Alternative candidate"
+        },
+        {
+            "Method": "Neural Network",
+            "Candidate Index": 13711,
+            "Candidate Input": [
+                0.351,
+                0.996,
+                0.986
+            ],
+            "GP Mean": 0.4442,
+            "GP Std": 0.0307,
+            "EI": 0.0017,
+            "PI": 0.1132,
+            "UCB": 0.5057,
+            "Distance to GP": 0.3697,
+            "GP Mean Rank": 2027,
+            "Uncertainty Rank": 15003,
+            "SVM Score": 0.7154,
+            "SVM Rank": 6281,
+            "GP Mean Loss": 0.0294,
+            "Loss per Distance": 0.0795,
+            "Uncertainty Gain vs GP": -0.0182,
+            "Exploration per Loss": 0.0,
+            "Mean-Std Tradeoff": 0.4749,
+            "Candidate Role": "Alternative candidate"
+        }
+    ],
+    "pca": {
+        "pca": {
+            "n_components": 3,
+            "explained_variance": [
+                0.13153343569215611,
+                0.0741129319343479,
+                0.03932681692341665
+            ],
+            "explained_variance_ratio": [
+                0.5369299335101398,
+                0.30253487568654747,
+                0.1605351908033127
+            ],
+            "singular_values": [
+                1.661987409559795,
+                1.2475462198336804,
+                0.9087701334175489
+            ],
+            "components": [
+                [
+                    -0.34415268502376184,
+                    0.17678982002631694,
+                    0.9221194548029001
+                ],
+                [
+                    0.5181386237488369,
+                    0.8547878176350232,
+                    0.029498362707366388
+                ],
+                [
+                    0.7830014661356619,
+                    -0.4879376459731478,
+                    0.38577915660593554
+                ]
+            ],
+            "mean": [
+                0.36096937376476257,
+                0.5524755742961447,
+                0.5439746964922076
+            ],
+            "noise_variance": 0.0
+        },
+        "n_retained": 3,
+        "retained_variance": 1.0,
+        "explained_variance_table": [
+            {
+                "Principal Component": "PC1",
+                "Explained Variance": 0.5369299335101398,
+                "Cumulative Variance": 0.5369299335101398,
+                "Retained for target": true
+            },
+            {
+                "Principal Component": "PC2",
+                "Explained Variance": 0.30253487568654747,
+                "Cumulative Variance": 0.8394648091966873,
+                "Retained for target": true
+            },
+            {
+                "Principal Component": "PC3",
+                "Explained Variance": 0.1605351908033127,
+                "Cumulative Variance": 1.0,
+                "Retained for target": true
+            }
+        ],
+        "loadings": [
+            {
+                "PC1 loading": -0.34415268502376184,
+                "PC2 loading": 0.5181386237488369,
+                "PC3 loading": 0.7830014661356619
+            },
+            {
+                "PC1 loading": 0.17678982002631694,
+                "PC2 loading": 0.8547878176350232,
+                "PC3 loading": -0.4879376459731478
+            },
+            {
+                "PC1 loading": 0.9221194548029001,
+                "PC2 loading": 0.029498362707366388,
+                "PC3 loading": 0.38577915660593554
+            }
+        ],
+        "X_pca_source": [
+            [
+                0.1715252068810621,
+                0.3439168702758373,
+                0.2487372010692387
+            ],
+            [
+                0.2421144606124933,
+                0.6440742697791076,
+                0.27243280919945523
+            ],
+            [
+                0.5349057202251034,
+                0.39850091536763166,
+                0.17338872894567725
+            ],
+            [
+                0.49258141463713434,
+                0.6115931882759961,
+                0.3401763860035727
+            ],
+            [
+                0.13462166632061112,
+                0.2199172404897456,
+                0.45820621964922703
+            ],
+            [
+                0.3455232705197697,
+                0.9413598305723256,
+                0.2693634790694064
+            ],
+            [
+                0.151836632374168,
+                0.43999061896644376,
+                0.990881866558951
+            ],
+            [
+                0.6455028351793182,
+                0.3971429395797703,
+                0.9197713377032198
+            ],
+            [
+                0.7469119451655177,
+                0.28419630922573424,
+                0.22629985488752546
+            ],
+            [
+                0.17047699396968063,
+                0.697032400686134,
+                0.14916943370830027
+            ],
+            [
+                0.2205493370831766,
+                0.2978252442230862,
+                0.34355534441672586
+            ],
+            [
+                0.6660136587669346,
+                0.6719851513369297,
+                0.2462952966705313
+            ],
+            [
+                0.046808949722497384,
+                0.2313602407834674,
+                0.7706175921643
+            ],
+            [
+                0.6000972824185008,
+                0.7251357252228826,
+                0.06608864149534865
+            ],
+            [
+                0.9659948489488087,
+                0.8611196897300882,
+                0.5668291312870885
+            ],
+            [
+                0.391002,
+                0.396498,
+                0.469238
+            ],
+            [
+                0.384722,
+                0.13418,
+                0.465124
+            ],
+            [
+                0.163443,
+                0.505483,
+                0.996532
+            ],
+            [
+                0.091583,
+                0.565946,
+                0.997205
+            ],
+            [
+                0.334285,
+                1.0,
+                1.0
+            ],
+            [
+                0.173804,
+                0.955042,
+                0.999257
+            ],
+            [
+                0.267023,
+                0.832163,
+                0.998274
+            ]
+        ],
+        "y_pca_source": [
+            0.11212220046256897,
+            0.08796286022736445,
+            0.111414654295324,
+            0.034835313350078584,
+            0.04800758439218157,
+            0.11062091307282658,
+            0.3989255131463011,
+            0.11386851478863991,
+            0.13146060864136055,
+            0.09418956091057398,
+            0.04694740582651916,
+            0.10596503573558178,
+            0.11804825644688696,
+            0.036377828071632486,
+            0.05675837155397648,
+            0.013121549394745623,
+            0.04003307120472938,
+            0.4262901716821166,
+            0.4383703839755198,
+            0.47622948272340854,
+            0.4687027245870447,
+            0.4647881785856751
+        ],
+        "X_pca_retained": [
+            [
+                -0.24391757537035885,
+                -0.28514080208947395,
+                -0.16046788931662878
+            ],
+            [
+                -0.19329610268784553,
+                0.008704086801988213,
+                -0.24251322336680373
+            ],
+            [
+                -0.42880634324974676,
+                -0.05242420278668664,
+                0.06835810489972922
+            ],
+            [
+                -0.22276963186933288,
+                0.11271458148207107,
+                -0.004414428774724358
+            ],
+            [
+                -0.05998353782173199,
+                -0.4040763316533009,
+                -0.04805054689883055
+            ],
+            [
+                -0.17915775050962143,
+                0.3163097207622435,
+                -0.3077848739022277
+            ],
+            [
+                0.46418919547699955,
+                -0.19132749048884076,
+                0.06354187233465686
+            ],
+            [
+                0.22114521064961395,
+                0.025736717897775166,
+                0.443557268880294
+            ],
+            [
+                -0.4731863669462426,
+                -0.0387209824152496,
+                0.3105448198436424
+            ],
+            [
+                -0.27294297436750703,
+                0.01321784581210265,
+                -0.3719981715456614
+            ],
+            [
+                -0.18150423703594906,
+                -0.296341087197244,
+                -0.0630132206055594
+            ],
+            [
+                -0.3583496989878082,
+                0.25142950165219974,
+                0.06569839289831082
+            ],
+            [
+                0.2603410548350526,
+                -0.43057853055047113,
+                -0.0018697075637300396
+            ],
+            [
+                -0.49243998331085864,
+                0.25739234290989577,
+                -0.08136836377715527
+            ],
+            [
+                -0.13258148521973423,
+                0.5779864653095718,
+                0.3319535155701052
+            ],
+            [
+                -0.10682721806829329,
+                -0.11997127688819452,
+                0.0707910610604802
+            ],
+            [
+                -0.1548346906530667,
+                -0.34757277445589935,
+                0.19228154381925563
+            ],
+            [
+                0.47698331711943753,
+                -0.12916502399948507,
+                0.04285318068510172
+            ],
+            [
+                0.5130239583465788,
+                -0.1146955772863081,
+                -0.042655849187485474
+            ],
+            [
+                0.5088110658038187,
+                0.3821642222943015,
+                -0.06333286159594324
+            ],
+            [
+                0.5554077813654553,
+                0.26056134982773743,
+                -0.1673396531085578
+            ],
+            [
+                0.5006960125011403,
+                0.203797245061265,
+                -0.03477097034826669
+            ]
+        ],
+        "retained_explained": [
+            0.5369299335101398,
+            0.30253487568654747,
+            0.1605351908033127
+        ],
+        "retained_pc_names": [
+            "PC1",
+            "PC2",
+            "PC3"
+        ],
+        "selected_candidates": {
+            "GP / Hybrid": [
+                0.016249385300016093,
+                0.8405764260343447,
+                0.9987320378202794
+            ],
+            "Thompson": [
+                0.022647567561474517,
+                0.9414753668637849,
+                0.9918103768356222
+            ],
+            "NN": [
+                0.33869558572769165,
+                1.0,
+                1.0
+            ],
+            "SVM": [
+                0.17053178608250982,
+                0.7059590140216693,
+                0.9983261655287298
+            ]
+        },
+        "selected_pca": {
+            "GP / Hybrid": [
+                0.5889101989927855,
+                0.08106695491258176,
+                -0.23505560417626
+            ],
+            "Thompson": [
+                0.5981635547248133,
+                0.1704251080310477,
+                -0.28194844229140914
+            ],
+            "NN": [
+                0.507293150883106,
+                0.384449517113174,
+                -0.05987936650464368
+            ],
+            "SVM": [
+                0.5116402457332454,
+                0.04592532932463089,
+                -0.04872393211049922
+            ]
+        },
+        "high_y_mask": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            true,
+            true,
+            true,
+            true
+        ],
+        "best_observed_idx_pca": 19,
+        "candidate_comparison": [
+            {
+                "Method": "GP / Hybrid",
+                "PC1": 0.5889101989927855,
+                "PC2": 0.08106695491258176,
+                "PC3": -0.23505560417626,
+                "PC1-PC3 distance from GP": 0.0,
+                "Original-space distance from GP": 0.0
+            },
+            {
+                "Method": "Thompson",
+                "PC1": 0.5981635547248133,
+                "PC2": 0.1704251080310477,
+                "PC3": -0.28194844229140914,
+                "PC1-PC3 distance from GP": 0.10133825727503036,
+                "Original-space distance from GP": 0.10133825727503032
+            },
+            {
+                "Method": "NN",
+                "PC1": 0.507293150883106,
+                "PC2": 0.384449517113174,
+                "PC3": -0.05987936650464368,
+                "PC1-PC3 distance from GP": 0.359706874877749,
+                "Original-space distance from GP": 0.3597068748777492
+            },
+            {
+                "Method": "SVM",
+                "PC1": 0.5116402457332454,
+                "PC2": 0.04592532932463089,
+                "PC3": -0.04872393211049922,
+                "PC1-PC3 distance from GP": 0.20475612699139786,
+                "Original-space distance from GP": 0.20475612699139792
+            }
+        ]
+    },
+    "extended_pca": {
+        "high_y_threshold": 0.33205928702006593,
+        "all_centroid_pca": [
+            -3.027880976250427e-17,
+            -9.840613172813887e-17,
+            7.885106708985487e-17
+        ],
+        "high_centroid_pca": [
+            0.503185221768905,
+            0.06855578756811168,
+            -0.03361738020341578
+        ],
+        "best_observed_pca": [
+            0.5088110658038187,
+            0.3821642222943015,
+            -0.06333286159594324
+        ],
+        "high_region_mean_radius": 0.2279324684910469,
+        "high_region_median_radius": 0.22667302866977684,
+        "high_region_max_radius": 0.3150633432929094,
+        "centroid_table": [
+            {
+                "Principal Component": "PC1",
+                "All-observation centroid": -3.027880976250427e-17,
+                "Top-25% y centroid": 0.503185221768905,
+                "Best observed": 0.5088110658038187,
+                "High-y centroid shift": 0.503185221768905
+            },
+            {
+                "Principal Component": "PC2",
+                "All-observation centroid": -9.840613172813887e-17,
+                "Top-25% y centroid": 0.06855578756811168,
+                "Best observed": 0.3821642222943015,
+                "High-y centroid shift": 0.06855578756811177
+            },
+            {
+                "Principal Component": "PC3",
+                "All-observation centroid": 7.885106708985487e-17,
+                "Top-25% y centroid": -0.03361738020341578,
+                "Best observed": -0.06333286159594324,
+                "High-y centroid shift": -0.033617380203415856
+            }
+        ],
+        "pc_y_diagnostics": [
+            {
+                "PC": "PC1",
+                "Explained variance": 0.5369299335101398,
+                "Pearson corr with y": 0.8566084958686718,
+                "Spearman corr with y": 0.5945793337097686,
+                "Top-25% mean PC score": 0.503185221768905,
+                "Other-observation mean PC score": -0.1886944581633394,
+                "Standardized high-y shift": 1.9077106040960397,
+                "|Spearman| rank": 1
+            },
+            {
+                "PC": "PC2",
+                "Explained variance": 0.30253487568654747,
+                "Pearson corr with y": 0.19177957761804096,
+                "Spearman corr with y": 0.15302089215132694,
+                "Top-25% mean PC score": 0.06855578756811168,
+                "Other-observation mean PC score": -0.025708420338042014,
+                "Standardized high-y shift": 0.3462580072685351,
+                "|Spearman| rank": 2
+            },
+            {
+                "PC": "PC3",
+                "Explained variance": 0.1605351908033127,
+                "Pearson corr with y": -0.11731464495367214,
+                "Spearman corr with y": -0.07961603613777528,
+                "Top-25% mean PC score": -0.03361738020341578,
+                "Other-observation mean PC score": 0.012606517576281007,
+                "Standardized high-y shift": -0.2330892078228495,
+                "|Spearman| rank": 3
+            }
+        ],
+        "candidate_region_diagnostics": [
+            {
+                "Method": "SVM",
+                "PCA dist to high-y centroid": 0.028492682939114458,
+                "PCA dist to best observed": 0.33656799940762844,
+                "PCA nearest high-y point": 0.15886473227665082,
+                "PCA nearest observed point": 0.15886473227665082,
+                "PCA dist to all-observation centroid": 0.5160028086046238,
+                "High-y radius units": 0.12500493294238,
+                "Original dist to high-y centroid": 0.028492682939114423,
+                "Original dist to best observed": 0.33656799940762844,
+                "Original nearest high-y point": 0.1588647322766508,
+                "Original nearest observed point": 0.1588647322766508,
+                "Original dist to all-observation centroid": 0.5160028086046239,
+                "High-y proximity rank": 1
+            },
+            {
+                "Method": "GP / Hybrid",
+                "PCA dist to high-y centroid": 0.21927758459470936,
+                "PCA dist to best observed": 0.3557585359224265,
+                "PCA nearest high-y point": 0.19474624469251609,
+                "PCA nearest observed point": 0.19474624469251609,
+                "PCA dist to all-observation centroid": 0.6392481605066904,
+                "High-y radius units": 0.9620287361706983,
+                "Original dist to high-y centroid": 0.21927758459470953,
+                "Original dist to best observed": 0.3557585359224268,
+                "Original nearest high-y point": 0.19474624469251622,
+                "Original nearest observed point": 0.19474624469251622,
+                "Original dist to all-observation centroid": 0.6392481605066906,
+                "High-y proximity rank": 2
+            },
+            {
+                "Method": "Thompson",
+                "PCA dist to high-y centroid": 0.2847218969106776,
+                "PCA dist to best observed": 0.31719093919621894,
+                "PCA nearest high-y point": 0.15194661167247975,
+                "PCA nearest observed point": 0.15194661167247975,
+                "PCA dist to all-observation centroid": 0.6828903863424723,
+                "High-y radius units": 1.2491502364519929,
+                "Original dist to high-y centroid": 0.2847218969106778,
+                "Original dist to best observed": 0.31719093919621916,
+                "Original nearest high-y point": 0.15194661167247991,
+                "Original nearest observed point": 0.15194661167247991,
+                "Original dist to all-observation centroid": 0.6828903863424725,
+                "High-y proximity rank": 3
+            },
+            {
+                "Method": "NN",
+                "PCA dist to high-y centroid": 0.31701011872175655,
+                "PCA dist to best observed": 0.0044105857276917175,
+                "PCA nearest high-y point": 0.0044105857276917175,
+                "PCA nearest observed point": 0.0044105857276917175,
+                "PCA dist to all-observation centroid": 0.639322540408564,
+                "High-y radius units": 1.3908072018893114,
+                "Original dist to high-y centroid": 0.31701011872175666,
+                "Original dist to best observed": 0.004410585727691652,
+                "Original nearest high-y point": 0.004410585727691652,
+                "Original nearest observed point": 0.004410585727691652,
+                "Original dist to all-observation centroid": 0.6393225404085641,
+                "High-y proximity rank": 4
+            }
+        ],
+        "pca_pairwise": [
+            {
+                "GP / Hybrid": 0.0,
+                "Thompson": 0.10133825727503036,
+                "NN": 0.359706874877749,
+                "SVM": 0.20475612699139786
+            },
+            {
+                "GP / Hybrid": 0.10133825727503036,
+                "Thompson": 0.0,
+                "NN": 0.32152535265216103,
+                "SVM": 0.2781728779840379
+            },
+            {
+                "GP / Hybrid": 0.359706874877749,
+                "Thompson": 0.32152535265216103,
+                "NN": 0.0,
+                "SVM": 0.3387358361142957
+            },
+            {
+                "GP / Hybrid": 0.20475612699139786,
+                "Thompson": 0.2781728779840379,
+                "NN": 0.3387358361142957,
+                "SVM": 0.0
+            }
+        ],
+        "original_pairwise": [
+            {
+                "GP / Hybrid": 0.0,
+                "Thompson": 0.10133825727503032,
+                "NN": 0.3597068748777492,
+                "SVM": 0.20475612699139792
+            },
+            {
+                "GP / Hybrid": 0.10133825727503032,
+                "Thompson": 0.0,
+                "NN": 0.32152535265216114,
+                "SVM": 0.2781728779840379
+            },
+            {
+                "GP / Hybrid": 0.3597068748777492,
+                "Thompson": 0.32152535265216114,
+                "NN": 0.0,
+                "SVM": 0.33873583611429564
+            },
+            {
+                "GP / Hybrid": 0.20475612699139792,
+                "Thompson": 0.2781728779840379,
+                "NN": 0.33873583611429564,
+                "SVM": 0.0
+            }
+        ],
+        "model_consensus": [
+            {
+                "Method": "GP / Hybrid",
+                "Mean PCA distance to other models": 0.22193375304805907,
+                "Mean original distance to other models": 0.22193375304805915,
+                "PCA consensus rank": 1
+            },
+            {
+                "Method": "Thompson",
+                "Mean PCA distance to other models": 0.2336788293037431,
+                "Mean original distance to other models": 0.23367882930374315,
+                "PCA consensus rank": 2
+            },
+            {
+                "Method": "SVM",
+                "Mean PCA distance to other models": 0.2738882803632438,
+                "Mean original distance to other models": 0.2738882803632438,
+                "PCA consensus rank": 3
+            },
+            {
+                "Method": "NN",
+                "Mean PCA distance to other models": 0.3399893545480686,
+                "Mean original distance to other models": 0.3399893545480686,
+                "PCA consensus rank": 4
+            }
+        ],
+        "candidate_pc_deviation": [
+            {
+                "Method": "GP / Hybrid",
+                "PC": "PC1",
+                "Candidate score": 0.5889101989927855,
+                "High-y centroid": 0.503185221768905,
+                "Difference": 0.0857249772238805,
+                "Difference in high-y SD units": 2.692328966814288
+            },
+            {
+                "Method": "GP / Hybrid",
+                "PC": "PC2",
+                "Candidate score": 0.08106695491258176,
+                "High-y centroid": 0.06855578756811168,
+                "Difference": 0.012511167344470081,
+                "Difference in high-y SD units": 0.05161972392223664
+            },
+            {
+                "Method": "GP / Hybrid",
+                "PC": "PC3",
+                "Candidate score": -0.23505560417626,
+                "High-y centroid": -0.03361738020341578,
+                "Difference": -0.20143822397284422,
+                "Difference in high-y SD units": -2.437949579977711
+            },
+            {
+                "Method": "Thompson",
+                "PC": "PC1",
+                "Candidate score": 0.5981635547248133,
+                "High-y centroid": 0.503185221768905,
+                "Difference": 0.0949783329559083,
+                "Difference in high-y SD units": 2.9829452899019233
+            },
+            {
+                "Method": "Thompson",
+                "PC": "PC2",
+                "Candidate score": 0.1704251080310477,
+                "High-y centroid": 0.06855578756811168,
+                "Difference": 0.10186932046293604,
+                "Difference in high-y SD units": 0.42030180347374574
+            },
+            {
+                "Method": "Thompson",
+                "PC": "PC3",
+                "Candidate score": -0.28194844229140914,
+                "High-y centroid": -0.03361738020341578,
+                "Difference": -0.24833106208799335,
+                "Difference in high-y SD units": -3.005480273666722
+            },
+            {
+                "Method": "NN",
+                "PC": "PC1",
+                "Candidate score": 0.507293150883106,
+                "High-y centroid": 0.503185221768905,
+                "Difference": 0.004107929114200992,
+                "Difference in high-y SD units": 0.12901603366891443
+            },
+            {
+                "Method": "NN",
+                "PC": "PC2",
+                "Candidate score": 0.384449517113174,
+                "High-y centroid": 0.06855578756811168,
+                "Difference": 0.31589372954506234,
+                "Difference in high-y SD units": 1.3033433778734635
+            },
+            {
+                "Method": "NN",
+                "PC": "PC3",
+                "Candidate score": -0.05987936650464368,
+                "High-y centroid": -0.03361738020341578,
+                "Difference": -0.026261986301227898,
+                "Difference in high-y SD units": -0.3178413570658277
+            },
+            {
+                "Method": "SVM",
+                "PC": "PC1",
+                "Candidate score": 0.5116402457332454,
+                "High-y centroid": 0.503185221768905,
+                "Difference": 0.008455023964340391,
+                "Difference in high-y SD units": 0.26554344686324743
+            },
+            {
+                "Method": "SVM",
+                "PC": "PC2",
+                "Candidate score": 0.04592532932463089,
+                "High-y centroid": 0.06855578756811168,
+                "Difference": -0.022630458243480783,
+                "Difference in high-y SD units": -0.09337082420838336
+            },
+            {
+                "Method": "SVM",
+                "PC": "PC3",
+                "Candidate score": -0.04872393211049922,
+                "High-y centroid": -0.03361738020341578,
+                "Difference": -0.015106551907083439,
+                "Difference in high-y SD units": -0.1828303047476752
+            }
+        ]
+    }
+}
