@@ -386,7 +386,85 @@ search space and model recommendations.
 * Added cross-model agreement measurements in retained PCA space.
 * Added analysis of high-performing-region compactness and PC/output
   association.
-  
+
+## Week 12 -- Final Terminal Exploitation and Candidate Refinement
+
+The final week focused on converting the optimisation strategy from
+exploration-driven Bayesian optimisation into terminal exploitation.
+Because no future evaluations remained after this round, the objective
+was changed from learning more about the search space to selecting the
+candidate with the highest expected final performance.
+
+The Gaussian Process ensemble remained the primary surrogate model, but
+candidate selection was based directly on maximum posterior mean rather
+than exploration-weighted acquisition scores. EI, UCB and PI were
+retained as diagnostics, while Thompson Sampling was disabled for the
+final round because additional exploratory information could no longer
+be exploited in later iterations.
+
+To reduce dependence on any single Latin Hypercube random seed, the
+candidate pools from all previous weeks were reconstructed and rescored
+using the final retrained GP ensemble. This provided a much larger and
+more representative terminal search space.
+
+### Key improvements:
+
+* Changed the final-week optimisation objective to pure terminal
+  exploitation using maximum GP ensemble posterior mean.
+
+* Retained EI, UCB and PI as diagnostic measures but removed their
+  influence from the final candidate-selection decision.
+
+* Disabled Thompson Sampling for the final round because there was no
+  remaining evaluation budget in which exploratory information could
+  provide future benefit.
+
+* Reconstructed and combined the Latin Hypercube candidate pools from
+  previous weeks and rescored them using the final GP ensemble,
+  reducing sensitivity to a single random candidate seed.
+
+* Reduced the minimum candidate-to-observation distance for the final
+  round, allowing much tighter exploitation around previously identified
+  high-performing regions while still preventing exact duplicate
+  submissions.
+
+* Added explicit boundary candidates where the optimisation evidence
+  suggested that the optimum was approaching the edge of the search
+  space.
+
+* Added terminal local-search diagnostics for functions where the global
+  candidate pool did not provide sufficient resolution around the
+  incumbent.
+
+* For Function 4, identified that the global GP ensemble was
+  over-smoothing a narrow high-performing region. A local Matérn GP was
+  fitted to nearby observations and used for final terminal refinement.
+
+* For Function 7, confirmed that the global GP accurately reproduced the
+  incumbent and therefore retained the existing surrogate. A dense local
+  search around the incumbent identified a nearby point with a slightly
+  higher posterior mean, with a line-search diagnostic confirming a
+  smooth increase toward the selected candidate.
+
+* For Function 8, performed a dense local refinement followed by a fine
+  one-dimensional line search. This identified a posterior-mean maximum
+  within the high-performing region that was not resolved by the broader
+  multi-million-point candidate pool.
+
+* Preserved the original GP candidate recommendations in the exported
+  JSON reports while adding a separate `final_submission_candidate`
+  field for functions requiring specialist terminal refinement.
+
+* Updated the final reporting workflow so that Streamlit and JSON output
+  clearly distinguish between the broad GP recommendation and the
+  actual final submission candidate.
+
+Overall, Week 12 represented the final transition from exploration and
+model learning to exploitation of the best-supported regions discovered
+throughout the project. The final selections were therefore based on the
+best available posterior evidence, supported by local diagnostics,
+PCA interpretation, cross-model comparisons and targeted refinement
+where necessary.
 ---
 
 ## 7. Current Strategy
