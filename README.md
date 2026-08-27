@@ -495,3 +495,25 @@ This creates a robust Bayesian optimisation framework that balances
 exploration, exploitation, uncertainty quantification, model diversity
 and search-space interpretation while operating under a limited
 evaluation budget.
+---
+
+## 8. Results
+
+## Results
+
+The final optimisation results are summarised below. Each function was treated as a
+maximisation problem and evaluated under a limited query budget. The reported input
+is the final recommended point, while the output is the best observed transformed
+objective value.
+
+| Function | Dimensions | Initial samples | Final samples | Best value | Recommended input |
+|---|---:|---:|---:|---:|---|
+| Function 1 | 2D | 10 | 23 | `...` | `[x1, x2]` |
+| Function 2 | 2D | 10 | 23 | `...` | `[x1, x2]` |
+| Function 3 | 3D | 15 | 28 | `...` | `[x1, x2, x3]` |
+| Function 4 | 4D | 30 | 43 | `...` | `[x1, x2, x3, x4]` |
+| Function 5 | 4D | 20 | 33 | `...` | `[x1, x2, x3, x4]` |
+| Function 6 | 5D | 20 | 33 | `...` | `[x1, x2, x3, x4, x5]` |
+| Function 7 | 6D | 30 | 43 | `...` | `[x1, x2, x3, x4, x5, x6]` |
+| Function 8 | 8D | 40 | 53 | `...` | `[x1, x2, ..., x8]` |
+
