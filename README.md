@@ -10,7 +10,7 @@ Each function represents a realistic optimisation problem where evaluations are 
 - 🤖 **Model Card** – [`BBO_Model_Card.md`](BBO_Model_Card.md)
 
 - A streamLit dashboard for this project is available at : https://capstone-m24jqknpen5vtbbpmqfusd.streamlit.app/
-- A reflection of the final project - [Final Project Reflection](Final%20Project%20Reflection.md)
+- A reflection of the final project - [Final Project Reflection](Final_Project_Reflection.md)
 
 ---
 
