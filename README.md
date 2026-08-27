@@ -500,8 +500,6 @@ evaluation budget.
 
 ## 8. Results
 
-## Results
-
 The final optimisation results are summarised below. Each function was treated as a
 maximisation problem and evaluated under a limited query budget. The reported input
 is the final recommended point, while the output is the best observed transformed
