@@ -249,6 +249,35 @@ def build_summary_dataframe(runs):
     return pd.DataFrame(rows)
 
 
+def build_best_values_dataframe(runs):
+    """Return the latest cumulative best value for each function."""
+    latest_runs = {}
+
+    for run in runs:
+        function_id = run.get("run", {}).get("function")
+        week = run.get("run", {}).get("week")
+
+        if function_id is None:
+            continue
+
+        if (
+            function_id not in latest_runs
+            or week is not None
+            and week > latest_runs[function_id].get("run", {}).get("week", -1)
+        ):
+            latest_runs[function_id] = run
+
+    rows = [
+        {
+            "Function": function_id,
+            "Best Value": get_best_raw_output(run),
+        }
+        for function_id, run in sorted(latest_runs.items())
+    ]
+
+    return pd.DataFrame(rows)
+
+
 # ============================================================
 # Load data
 # ============================================================
@@ -311,6 +340,42 @@ selected_run = next(
 # ============================================================
 # Overview across all functions
 # ============================================================
+
+st.subheader("Best Value by Function")
+
+best_values_df = build_best_values_dataframe(runs)
+
+best_values_col, _ = st.columns([1, 1])
+
+centred_best_values_df = (
+    best_values_df.style
+    .set_properties(**{"text-align": "center"})
+    .set_table_styles(
+        [
+            {
+                "selector": "th",
+                "props": [("text-align", "center")],
+            }
+        ]
+    )
+)
+
+with best_values_col:
+    st.dataframe(
+        centred_best_values_df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Function": st.column_config.NumberColumn(
+                "Function",
+                format="%d",
+            ),
+            "Best Value": st.column_config.NumberColumn(
+                "Best Value",
+                format="%.6f",
+            ),
+        },
+    )
 
 st.subheader("All Functions")
 
