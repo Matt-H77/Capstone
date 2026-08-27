@@ -5,11 +5,6 @@ I began with a relatively simple Gaussian Process (GP)-based Bayesian optimisati
 I chose this starting point because Gaussian Processes are well suited to black-box optimisation when evaluations are expensive and only a limited number of observations are available. They provide both a predicted mean and an estimate of uncertainty, making it possible to balance exploitation of promising regions with exploration of uncertain areas.
 
 The first version was intentionally simple. It scaled the input variables, trained a GP surrogate using the available observations, generated candidate points and selected new queries using an acquisition function. This provided a clear baseline that could be evaluated and improved throughout the project.
-
-My code is publicly available here:
-
-https://github.com/Matt-H77/CapstoneLinks to an external site.
-
  
 
 ## Code modifications
