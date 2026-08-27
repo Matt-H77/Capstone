@@ -1,5 +1,5 @@
-##Final BBO Capstone Reflection
-#Initial codebase
+# Final BBO Capstone Reflection
+## Initial codebase
 I began with a relatively simple Gaussian Process (GP)-based Bayesian optimisation implementation. I built the initial codebase from scratch using the concepts covered in the module, rather than taking it directly from an existing public project. I felt that developing the code myself would be an effective way to reinforce my learning and understand how the different components of Bayesian optimisation worked together.
 
 I chose this starting point because Gaussian Processes are well suited to black-box optimisation when evaluations are expensive and only a limited number of observations are available. They provide both a predicted mean and an estimate of uncertainty, making it possible to balance exploitation of promising regions with exploration of uncertain areas.
@@ -12,7 +12,7 @@ https://github.com/Matt-H77/CapstoneLinks to an external site.
 
  
 
-#Code modifications
+## Code modifications
 The implementation developed considerably over the course of the project, with each week adding functionality in response to limitations identified in the previous iteration.
 
 In Week 1, I implemented a single Gaussian Process surrogate and generated candidate points using Latin Hypercube Sampling. Candidate selection was based on GP predictions and acquisition functions. This established a working Bayesian optimisation pipeline and provided a baseline for later improvements.
@@ -43,7 +43,7 @@ The changes with the greatest practical impact were the GP ensemble, SVM candida
 
  
 
-#Final result
+## Final result
 The final weeks produced more consistent and targeted queries than the early rounds because my strategy gradually shifted from predominantly exploratory behaviour towards greater exploitation. Initially, many queries were exploratory because there was little information about the shape of each function. As the data set grew, the optimiser increasingly concentrated on regions associated with high observed values. The acquisition weighting gradually shifted towards Expected Improvement, while still retaining uncertainty-based exploration through UCB and Thompson sampling.
 
 The differences in my leaderboard positions across the functions suggest that the strategy performed better on some search landscapes than others. My strongest result was second place on Function 4. This indicates that the later improvements to the surrogate models, candidate selection and exploitation strategy were particularly effective for that function. The results on Functions 7 and 8 were also encouraging, especially because these were higher-dimensional problems where uncertainty remained significant. I feel that the knowledge gained throughout this process would allow me to analyse my models more effectively and produce a stronger overall strategy if I were to take part in another black-box optimisation challenge.
@@ -56,7 +56,7 @@ With a fresh start, I would design the data-management and experiment-tracking s
 
  
 
-#Trade-offs and decisions
+## Trade-offs and decisions
 The main trade-off was between exploration and exploitation. Exploitation was attractive in the final weeks because the remaining query budget was limited and the current best regions had already produced good results. However, excessive exploitation could repeatedly sample the same basin, particularly when the surrogate was overconfident. I therefore used a hybrid strategy that favoured the best predicted regions while preserving a controlled amount of random, Thompson-sampling and UCB-based exploration. In hindsight, I may have continued exploring too much as the weeks progressed and should probably have shifted towards exploitation earlier for some functions.
 
 Another trade-off concerned model complexity. A single GP was easier to interpret and faster to run, but it could be too dependent on the assumptions of its selected kernel. An ensemble was more robust, but required more computation and introduced additional decisions about how to combine the predictions. Similarly, the neural surrogate added flexibility but was not always reliable when trained on very small data sets.
@@ -67,7 +67,7 @@ Finally, I had to decide whether to keep all observations, including duplicate i
 
  
 
-#Learning and application
+## Learning and application
 The most important lesson was that Bayesian optimisation is not just about selecting an acquisition function. The quality of the complete pipeline depends on data preprocessing, surrogate assumptions, candidate generation, noise handling, diagnostics and the decision about how much uncertainty to tolerate. A theoretically strong method can still perform poorly if the candidate pool is biased, the model is overconfident or the search becomes too narrow too early.
 
 I would apply this lesson to future competitions by starting with a reliable baseline, recording results systematically and making one controlled change at a time. In real-world ML projects, this is equally important. In my work on broadcast graphics and sports video systems, evaluations can be expensive because they may involve processing large video data sets or running GPU-based models. Surrogate modelling and active experimentation could reduce the number of tests needed when tuning tracker parameters, calibration settings or model configurations.
