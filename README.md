@@ -508,7 +508,7 @@ objective value.
 
 | Function | Dimensions | Initial samples | Final samples | Best value | Recommended input |
 |---|---:|---:|---:|---:|---|
-| Function 1 | 2D | 10 | 23 | `...` | `[x1, x2]` |
+| Function 1 | 2D | 10 | 23 | -0.015465 | `[0.634176, 0.677097]` |
 | Function 2 | 2D | 10 | 23 | `...` | `[x1, x2]` |
 | Function 3 | 3D | 15 | 28 | `...` | `[x1, x2, x3]` |
 | Function 4 | 4D | 30 | 43 | `...` | `[x1, x2, x3, x4]` |
