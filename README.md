@@ -9,9 +9,9 @@ Each function represents a realistic optimisation problem where evaluations are 
 - 📊 **Dataset Datasheet** – [`BBO_Dataset_Datasheet.md`](BBO_Dataset_Datasheet.md)
 - 🤖 **Model Card** – [`BBO_Model_Card.md`](BBO_Model_Card.md)
 - 📄 **Licence** – [`licence.md`](licence.md)
-- A streamLit dashboard for this project is available at : https://capstone-m24jqknpen5vtbbpmqfusd.streamlit.app/
+- **A streamLit dashboard for this project is available at :** https://capstone-m24jqknpen5vtbbpmqfusd.streamlit.app/
 - 📈 [Jump to Results](#8-results)
-- 📄 A reflection of the final project - [Final Project Reflection](Final_Project_Reflection.md)
+- 📄 **A reflection of the final project -** [Final Project Reflection](Final_Project_Reflection.md)
 
 ---
 
