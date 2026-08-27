@@ -516,3 +516,16 @@ objective value.
 | Function 7 | 6D | 30 | 43 | `2.845336` | `[0.184378, 0.236845, 0.520662, 0.201635, 0.376267, 0.713072]` |
 | Function 8 | 8D | 40 | 53 | `9.998474` | `[0.109209, 0.16213, 0.138848, 0.154742, 0.842353, 0.500099, 0.200835, 0.576853]` |
 
+### Weekly Results
+
+Detailed reports and diagnostic outputs for each optimisation week are available here:
+
+- [Week 4 results](weekly_results/week4/)
+- [Week 5 results](weekly_results/week5/)
+- [Week 6 results](weekly_results/week6/)
+- [Week 7 results](weekly_results/week7/)
+- [Week 8 results](weekly_results/week8/)
+- [Week 9 results](weekly_results/week9/)
+- [Week 10 results](weekly_results/week10/)
+- [Week 11 results](weekly_results/week11/)
+- [Week 12 results](weekly_results/week12/)
